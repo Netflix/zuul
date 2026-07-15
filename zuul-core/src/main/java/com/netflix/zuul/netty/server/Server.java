@@ -58,7 +58,6 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.channel.uring.IoUring;
 import io.netty.channel.uring.IoUringAdaptiveBufferRingAllocator;
 import io.netty.channel.uring.IoUringBufferRingConfig;
-import io.netty.channel.uring.IoUringChannelOption;
 import io.netty.channel.uring.IoUringIoHandler;
 import io.netty.channel.uring.IoUringIoHandlerConfig;
 import io.netty.channel.uring.IoUringServerSocketChannel;
@@ -88,15 +87,14 @@ import org.slf4j.LoggerFactory;
 /**
  *
  * NOTE: Shout-out to <a href="https://github.com/adamfisk/LittleProxy">LittleProxy</a> which was great as a reference.
- *
- * User: michaels
- * Date: 11/8/14
- * Time: 8:39 PM
+ * <p>
+ * User: michaels Date: 11/8/14 Time: 8:39 PM
  */
 public class Server {
+
     /**
-     * This field is effectively a noop, as Epoll is enabled automatically if available.   This can be disabled by
-     * using the {@link #FORCE_NIO} property.
+     * This field is effectively a noop, as Epoll is enabled automatically if available.   This can be disabled by using
+     * the {@link #FORCE_NIO} property.
      */
     @Deprecated
     public static final DynamicBooleanProperty USE_EPOLL =
@@ -141,9 +139,9 @@ public class Server {
     public static final AtomicReference<Class<? extends Channel>> defaultOutboundChannelType = new AtomicReference<>();
 
     /**
-     * Use {@link #Server(Registry, ServerStatusManager, Map, ClientConnectionsShutdown, EventLoopGroupMetrics,
-     * EventLoopConfig)}
-     * instead.
+     * Use
+     * {@link #Server(Registry, ServerStatusManager, Map, ClientConnectionsShutdown, EventLoopGroupMetrics,
+     * EventLoopConfig)} instead.
      */
     @SuppressWarnings("rawtypes")
     @Deprecated
@@ -161,9 +159,9 @@ public class Server {
     }
 
     /**
-     * Use {@link #Server(Registry, ServerStatusManager, Map, ClientConnectionsShutdown, EventLoopGroupMetrics,
-     * EventLoopConfig)}
-     * instead.
+     * Use
+     * {@link #Server(Registry, ServerStatusManager, Map, ClientConnectionsShutdown, EventLoopGroupMetrics,
+     * EventLoopConfig)} instead.
      */
     @SuppressWarnings({"unchecked", "rawtypes"
     }) // Channel init map has the wrong generics and we can't fix without api breakage.
@@ -249,11 +247,11 @@ public class Server {
             if (alloc instanceof ByteBufAllocatorMetricProvider byteBufAllocatorMetricProvider) {
                 ByteBufAllocatorMetric metrics = byteBufAllocatorMetricProvider.metric();
                 PolledMeter.using(registry)
-                        .withId(registry.createId("zuul.nettybuffermem.live", "type", "heap"))
-                        .monitorValue(metrics, ByteBufAllocatorMetric::usedHeapMemory);
+                           .withId(registry.createId("zuul.nettybuffermem.live", "type", "heap"))
+                           .monitorValue(metrics, ByteBufAllocatorMetric::usedHeapMemory);
                 PolledMeter.using(registry)
-                        .withId(registry.createId("zuul.nettybuffermem.live", "type", "direct"))
-                        .monitorValue(metrics, ByteBufAllocatorMetric::usedDirectMemory);
+                           .withId(registry.createId("zuul.nettybuffermem.live", "type", "direct"))
+                           .monitorValue(metrics, ByteBufAllocatorMetric::usedDirectMemory);
             }
         }
     }
@@ -275,9 +273,9 @@ public class Server {
     public void waitForEachEventLoop() throws InterruptedException, ExecutionException {
         for (EventExecutor exec : serverGroup.clientToProxyWorkerPool) {
             exec.submit(() -> {
-                        // Do nothing.
-                    })
-                    .get();
+                    // Do nothing.
+                })
+                .get();
         }
     }
 
@@ -332,14 +330,18 @@ public class Server {
     /**
      * Override for metrics or informational purposes
      *
-     * @param clientToProxyBossPool - acceptor pool
+     * @param clientToProxyBossPool   - acceptor pool
      * @param clientToProxyWorkerPool - worker pool
      */
     public void postEventLoopCreationHook(
-            EventLoopGroup clientToProxyBossPool, EventLoopGroup clientToProxyWorkerPool) {}
+            EventLoopGroup clientToProxyBossPool, EventLoopGroup clientToProxyWorkerPool) {
+    }
 
     private final class ServerGroup {
-        /** A name for this ServerGroup to use in naming threads. */
+
+        /**
+         * A name for this ServerGroup to use in naming threads.
+         */
         private final String name;
 
         private final int acceptorThreads;
@@ -366,7 +368,8 @@ public class Server {
             Map<ChannelOption<?>, Object> childOptions = new HashMap<>();
 
             boolean useNio = FORCE_NIO.get();
-            boolean useIoUring = FORCE_IO_URING.get();
+            boolean unused = FORCE_IO_URING.get();
+            boolean useIoUring = true;
             // TODO: Temporary.
             LOG.error("Initializing transport. Searching for IO_URING");
             final IoHandlerFactory handlerFactory;
@@ -382,30 +385,23 @@ public class Server {
                 channelType = IoUringServerSocketChannel.class;
                 defaultOutboundChannelType.set(IoUringSocketChannel.class);
 
-                // 1. Define the unique buffer group ID
-                short MY_BUFFER_GROUP_ID = 1;
+                // Just needs to be unique
+                short BUFFER_GROUP_ID = 1;
 
-                // 2. Build the buffer ring configuration
                 IoUringBufferRingConfig ringConfig = IoUringBufferRingConfig.builder()
-                        .bufferGroupId(MY_BUFFER_GROUP_ID)
-                        .bufferRingSize((short) 4096) // Number of entries in the ring
-                        .batchAllocation(true)
-                        .allocator(new IoUringAdaptiveBufferRingAllocator(
-                                ByteBufAllocator.DEFAULT, 1024, 1024, 4 * 1024, true))
-                        .build();
+                                                                            .bufferGroupId(BUFFER_GROUP_ID)
+                                                                            // 4096 will handle ~13600 connections per thread at 30% burst target ratio
+                                                                            .bufferRingSize((short) 4096)
+                                                                            .batchSize(2048)
+                                                                            .batchAllocation(true)
+                                                                            .allocator(
+                                                                                    new IoUringAdaptiveBufferRingAllocator(
+                                                                                            ByteBufAllocator.DEFAULT,
+                                                                                            1024, 4096, 65536, true))
+                                                                            .build();
 
-                // 3. Register it inside Netty's IO Uring IoHandler
-                IoUringIoHandlerConfig ioUringConfig = new IoUringIoHandlerConfig();
-                ioUringConfig.setBufferRingConfig(ringConfig);
-
-                // 4. Boost the completion queue size if using advanced multishot features
-                if (IoUring.isRecvMultishotEnabled()) {
-                    ioUringConfig.setCqSize(ioUringConfig.getRingSize() * 4); //
-                }
+                IoUringIoHandlerConfig ioUringConfig = getIoUringIoHandlerConfig(ringConfig);
                 handlerFactory = IoUringIoHandler.newFactory(ioUringConfig);
-
-                // 5. Apply the Group ID to your ServerBootstrap options
-                childOptions.put(IoUringChannelOption.IO_URING_BUFFER_GROUP_ID, MY_BUFFER_GROUP_ID);
 
             } else if (!useNio && epollIsAvailable()) {
                 channelType = EpollServerSocketChannel.class;
@@ -433,6 +429,20 @@ public class Server {
             transportChannelOptions = Collections.unmodifiableMap(channelOptions);
             transportChannelChildOptions = Collections.unmodifiableMap(childOptions);
             postEventLoopCreationHook(clientToProxyBossPool, clientToProxyWorkerPool);
+        }
+
+        private static IoUringIoHandlerConfig getIoUringIoHandlerConfig(
+                IoUringBufferRingConfig ringConfig) {
+            IoUringIoHandlerConfig ioUringConfig = new IoUringIoHandlerConfig();
+            ioUringConfig.setBufferRingConfig(ringConfig);
+            ioUringConfig.setRingSize(4096); // Size of the submission queue
+            // Boost the completion queue size if using advanced multishot features
+            if (IoUring.isRecvMultishotEnabled()) {
+                ioUringConfig.setCqSize(ioUringConfig.getRingSize() * 4); //
+            } else {
+                ioUringConfig.setCqSize(8192);
+            }
+            return ioUringConfig;
         }
 
         private synchronized void stop() {
