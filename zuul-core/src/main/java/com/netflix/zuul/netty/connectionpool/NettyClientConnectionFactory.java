@@ -16,6 +16,7 @@
 
 package com.netflix.zuul.netty.connectionpool;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.netflix.zuul.netty.server.Server;
 import com.netflix.zuul.passport.CurrentPassport;
 import io.netty.bootstrap.Bootstrap;
@@ -28,10 +29,12 @@ import io.netty.channel.WriteBufferWaterMark;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.Objects;
+import org.jspecify.annotations.NullMarked;
 
 /**
  * Created by saroskar on 3/16/16.
  */
+@NullMarked
 public class NettyClientConnectionFactory {
 
     private final ConnectionPoolConfig connPoolConfig;
@@ -50,6 +53,12 @@ public class NettyClientConnectionFactory {
             // This should be checked by the ClientConnectionManager
             assert !inetSocketAddress.isUnresolved() : socketAddress;
         }
+        return createBootstrap(eventLoop, socketAddress, passport, pool).connect();
+    }
+
+    @VisibleForTesting
+    Bootstrap createBootstrap(
+            EventLoop eventLoop, SocketAddress socketAddress, CurrentPassport passport, IConnectionPool pool) {
         Bootstrap bootstrap = new Bootstrap()
                 .channel(Server.defaultOutboundChannelType.get())
                 .handler(channelInitializer)
@@ -59,8 +68,6 @@ public class NettyClientConnectionFactory {
                 .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, connPoolConfig.getConnectTimeout())
                 .option(ChannelOption.SO_KEEPALIVE, connPoolConfig.getTcpKeepAlive())
                 .option(ChannelOption.TCP_NODELAY, connPoolConfig.getTcpNoDelay())
-                .option(ChannelOption.SO_SNDBUF, connPoolConfig.getTcpSendBufferSize())
-                .option(ChannelOption.SO_RCVBUF, connPoolConfig.getTcpReceiveBufferSize())
                 .option(
                         ChannelOption.WRITE_BUFFER_WATER_MARK,
                         new WriteBufferWaterMark(
@@ -68,6 +75,12 @@ public class NettyClientConnectionFactory {
                                 connPoolConfig.getNettyWriteBufferHighWaterMark()))
                 .option(ChannelOption.AUTO_READ, connPoolConfig.getNettyAutoRead())
                 .remoteAddress(socketAddress);
-        return bootstrap.connect();
+
+        if (!connPoolConfig.useDefaultTcpBufferSizes()) {
+            bootstrap.option(ChannelOption.SO_SNDBUF, connPoolConfig.getTcpSendBufferSize());
+            bootstrap.option(ChannelOption.SO_RCVBUF, connPoolConfig.getTcpReceiveBufferSize());
+        }
+
+        return bootstrap;
     }
 }

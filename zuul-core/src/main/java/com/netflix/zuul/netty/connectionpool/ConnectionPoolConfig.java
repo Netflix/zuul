@@ -23,26 +23,45 @@ import com.netflix.zuul.origins.OriginName;
  */
 public interface ConnectionPoolConfig {
 
-    /* Origin name from connection pool */
+    /**
+     * Origin name from connection pool.
+     */
     OriginName getOriginName();
 
-    /* Max number of requests per connection before it needs to be recycled */
+    /**
+     * Max number of requests per connection before it needs to be recycled.
+     */
     int getMaxRequestsPerConnection();
 
-    /* Max connections per host */
+    /**
+     * Max connections per host.
+     */
     int maxConnectionsPerHost();
 
     int perServerWaterline();
 
-    /* Origin client TCP configuration options */
+    /**
+     * Origin client TCP configuration options.
+     */
     int getConnectTimeout();
 
-    /* number of milliseconds connection can stay idle in a connection pool before it is closed */
+    /**
+     * Number of milliseconds connection can stay idle in a connection pool before it is closed.
+     */
     int getIdleTimeout();
 
     int getTcpReceiveBufferSize();
 
     int getTcpSendBufferSize();
+
+    /**
+     * When true, connections do not explicitly set the SO_SNDBUF/SO_RCVBUF options as configured by
+     * {@link #getTcpReceiveBufferSize()} and {@link #getTcpSendBufferSize()}. Instead, the new channels will rely on
+     * the OS's default TCP buffer sizes. Enabling this setting will enable the use of kernel autotuning
+     */
+    default boolean useDefaultTcpBufferSizes() {
+        return false;
+    }
 
     int getNettyWriteBufferHighWaterMark();
 

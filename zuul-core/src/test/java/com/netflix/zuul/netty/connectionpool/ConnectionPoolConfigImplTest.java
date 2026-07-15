@@ -148,6 +148,17 @@ class ConnectionPoolConfigImplTest {
     }
 
     @Test
+    void testUseDefaultTcpBufferSizes() {
+        assertThat(connectionPoolConfig.useDefaultTcpBufferSizes()).isFalse();
+    }
+
+    @Test
+    void testUseDefaultTcpBufferSizesOverride() {
+        clientConfig.set(ConnectionPoolConfigImpl.USE_DEFAULT_TCP_BUFFER_SIZES, true);
+        assertThat(connectionPoolConfig.useDefaultTcpBufferSizes()).isTrue();
+    }
+
+    @Test
     void testGetNettyWriteBufferHighWaterMark() {
         assertThat(connectionPoolConfig.getNettyWriteBufferHighWaterMark())
                 .isEqualTo(ConnectionPoolConfigImpl.DEFAULT_WRITE_BUFFER_HIGH_WATER_MARK);
