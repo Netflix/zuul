@@ -13,6 +13,11 @@ application {
 }
 
 dependencies {
+
+    constraints {
+        implementation 'com.thoughtworks.xstream:xstream:1.4.21'
+    }
+
     implementation project(":zuul-core")
     implementation "com.netflix.eureka:eureka-client:2.0.4"
     implementation 'commons-configuration:commons-configuration:1.10'

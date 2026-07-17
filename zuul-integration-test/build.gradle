@@ -2,6 +2,11 @@ apply plugin: "java"
 apply plugin: 'application'
 
 dependencies {
+
+    constraints {
+        implementation 'com.thoughtworks.xstream:xstream:1.4.21'
+    }
+
     implementation project(":zuul-core"),
             project(":zuul-discovery")
 
