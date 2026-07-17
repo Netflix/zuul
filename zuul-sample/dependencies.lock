@@ -47,26 +47,26 @@
                 "com.netflix.zuul:zuul-core",
                 "com.netflix.zuul:zuul-discovery"
             ],
-            "locked": "2.4.4"
+            "locked": "2.7.18"
         },
         "com.netflix.ribbon:ribbon-core": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core",
                 "com.netflix.zuul:zuul-discovery"
             ],
-            "locked": "2.4.4"
+            "locked": "2.7.18"
         },
         "com.netflix.ribbon:ribbon-eureka": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-discovery"
             ],
-            "locked": "2.4.4"
+            "locked": "2.7.18"
         },
         "com.netflix.ribbon:ribbon-loadbalancer": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-discovery"
             ],
-            "locked": "2.4.4"
+            "locked": "2.7.18"
         },
         "com.netflix.servo:servo-core": {
             "firstLevelTransitive": [
@@ -78,7 +78,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.10.1"
+            "locked": "1.10.2"
         },
         "com.netflix.zuul:zuul-core": {
             "firstLevelTransitive": [
@@ -249,19 +249,19 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.4.4"
+            "locked": "2.7.18"
         },
         "com.netflix.ribbon:ribbon-core": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.4.4"
+            "locked": "2.7.18"
         },
         "com.netflix.ribbon:ribbon-loadbalancer": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-discovery"
             ],
-            "locked": "2.4.4"
+            "locked": "2.7.18"
         },
         "com.netflix.servo:servo-core": {
             "firstLevelTransitive": [
@@ -273,7 +273,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.10.1"
+            "locked": "1.10.2"
         },
         "com.netflix.zuul:zuul-core": {
             "project": true
@@ -416,19 +416,19 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.4.4"
+            "locked": "2.7.18"
         },
         "com.netflix.ribbon:ribbon-core": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.4.4"
+            "locked": "2.7.18"
         },
         "com.netflix.ribbon:ribbon-loadbalancer": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-discovery"
             ],
-            "locked": "2.4.4"
+            "locked": "2.7.18"
         },
         "com.netflix.servo:servo-core": {
             "firstLevelTransitive": [
@@ -440,7 +440,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.10.1"
+            "locked": "1.10.2"
         },
         "com.netflix.zuul:zuul-core": {
             "project": true
@@ -583,26 +583,26 @@
                 "com.netflix.zuul:zuul-core",
                 "com.netflix.zuul:zuul-discovery"
             ],
-            "locked": "2.4.4"
+            "locked": "2.7.18"
         },
         "com.netflix.ribbon:ribbon-core": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core",
                 "com.netflix.zuul:zuul-discovery"
             ],
-            "locked": "2.4.4"
+            "locked": "2.7.18"
         },
         "com.netflix.ribbon:ribbon-eureka": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-discovery"
             ],
-            "locked": "2.4.4"
+            "locked": "2.7.18"
         },
         "com.netflix.ribbon:ribbon-loadbalancer": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-discovery"
             ],
-            "locked": "2.4.4"
+            "locked": "2.7.18"
         },
         "com.netflix.servo:servo-core": {
             "firstLevelTransitive": [
@@ -614,7 +614,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.10.1"
+            "locked": "1.10.2"
         },
         "com.netflix.zuul:zuul-core": {
             "project": true
@@ -812,26 +812,26 @@
                 "com.netflix.zuul:zuul-core",
                 "com.netflix.zuul:zuul-discovery"
             ],
-            "locked": "2.4.4"
+            "locked": "2.7.18"
         },
         "com.netflix.ribbon:ribbon-core": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core",
                 "com.netflix.zuul:zuul-discovery"
             ],
-            "locked": "2.4.4"
+            "locked": "2.7.18"
         },
         "com.netflix.ribbon:ribbon-eureka": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-discovery"
             ],
-            "locked": "2.4.4"
+            "locked": "2.7.18"
         },
         "com.netflix.ribbon:ribbon-loadbalancer": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-discovery"
             ],
-            "locked": "2.4.4"
+            "locked": "2.7.18"
         },
         "com.netflix.servo:servo-core": {
             "firstLevelTransitive": [
@@ -843,7 +843,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.10.1"
+            "locked": "1.10.2"
         },
         "com.netflix.zuul:zuul-core": {
             "project": true
@@ -1028,19 +1028,19 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.4.4"
+            "locked": "2.7.18"
         },
         "com.netflix.ribbon:ribbon-core": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.4.4"
+            "locked": "2.7.18"
         },
         "com.netflix.ribbon:ribbon-loadbalancer": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-discovery"
             ],
-            "locked": "2.4.4"
+            "locked": "2.7.18"
         },
         "com.netflix.servo:servo-core": {
             "firstLevelTransitive": [
@@ -1052,7 +1052,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.10.1"
+            "locked": "1.10.2"
         },
         "com.netflix.zuul:zuul-core": {
             "project": true
@@ -1189,26 +1189,26 @@
                 "com.netflix.zuul:zuul-core",
                 "com.netflix.zuul:zuul-discovery"
             ],
-            "locked": "2.4.4"
+            "locked": "2.7.18"
         },
         "com.netflix.ribbon:ribbon-core": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core",
                 "com.netflix.zuul:zuul-discovery"
             ],
-            "locked": "2.4.4"
+            "locked": "2.7.18"
         },
         "com.netflix.ribbon:ribbon-eureka": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-discovery"
             ],
-            "locked": "2.4.4"
+            "locked": "2.7.18"
         },
         "com.netflix.ribbon:ribbon-loadbalancer": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-discovery"
             ],
-            "locked": "2.4.4"
+            "locked": "2.7.18"
         },
         "com.netflix.servo:servo-core": {
             "firstLevelTransitive": [
@@ -1220,7 +1220,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.10.1"
+            "locked": "1.10.2"
         },
         "com.netflix.zuul:zuul-core": {
             "project": true

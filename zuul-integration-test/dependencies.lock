@@ -47,26 +47,26 @@
                 "com.netflix.zuul:zuul-core",
                 "com.netflix.zuul:zuul-discovery"
             ],
-            "locked": "2.4.4"
+            "locked": "2.7.18"
         },
         "com.netflix.ribbon:ribbon-core": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core",
                 "com.netflix.zuul:zuul-discovery"
             ],
-            "locked": "2.4.4"
+            "locked": "2.7.18"
         },
         "com.netflix.ribbon:ribbon-eureka": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-discovery"
             ],
-            "locked": "2.4.4"
+            "locked": "2.7.18"
         },
         "com.netflix.ribbon:ribbon-loadbalancer": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-discovery"
             ],
-            "locked": "2.4.4"
+            "locked": "2.7.18"
         },
         "com.netflix.servo:servo-core": {
             "firstLevelTransitive": [
@@ -78,7 +78,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.10.1"
+            "locked": "1.10.2"
         },
         "com.netflix.zuul:zuul-core": {
             "firstLevelTransitive": [
@@ -249,22 +249,22 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.4.4"
+            "locked": "2.7.18"
         },
         "com.netflix.ribbon:ribbon-core": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.4.4"
+            "locked": "2.7.18"
         },
         "com.netflix.ribbon:ribbon-eureka": {
-            "locked": "2.4.4"
+            "locked": "2.7.18"
         },
         "com.netflix.ribbon:ribbon-loadbalancer": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-discovery"
             ],
-            "locked": "2.4.4"
+            "locked": "2.7.18"
         },
         "com.netflix.servo:servo-core": {
             "firstLevelTransitive": [
@@ -276,7 +276,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.10.1"
+            "locked": "1.10.2"
         },
         "com.netflix.zuul:zuul-core": {
             "project": true
@@ -410,22 +410,22 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.4.4"
+            "locked": "2.7.18"
         },
         "com.netflix.ribbon:ribbon-core": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.4.4"
+            "locked": "2.7.18"
         },
         "com.netflix.ribbon:ribbon-eureka": {
-            "locked": "2.4.4"
+            "locked": "2.7.18"
         },
         "com.netflix.ribbon:ribbon-loadbalancer": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-discovery"
             ],
-            "locked": "2.4.4"
+            "locked": "2.7.18"
         },
         "com.netflix.servo:servo-core": {
             "firstLevelTransitive": [
@@ -437,7 +437,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.10.1"
+            "locked": "1.10.2"
         },
         "com.netflix.zuul:zuul-core": {
             "project": true
@@ -560,7 +560,7 @@
                 "com.netflix.zuul:zuul-core",
                 "com.netflix.zuul:zuul-discovery"
             ],
-            "locked": "33.3.1-jre"
+            "locked": "33.5.0-jre"
         },
         "com.netflix.archaius:archaius-core": {
             "firstLevelTransitive": [
@@ -586,26 +586,26 @@
                 "com.netflix.zuul:zuul-core",
                 "com.netflix.zuul:zuul-discovery"
             ],
-            "locked": "2.4.4"
+            "locked": "2.7.18"
         },
         "com.netflix.ribbon:ribbon-core": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core",
                 "com.netflix.zuul:zuul-discovery"
             ],
-            "locked": "2.4.4"
+            "locked": "2.7.18"
         },
         "com.netflix.ribbon:ribbon-eureka": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-discovery"
             ],
-            "locked": "2.4.4"
+            "locked": "2.7.18"
         },
         "com.netflix.ribbon:ribbon-loadbalancer": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-discovery"
             ],
-            "locked": "2.4.4"
+            "locked": "2.7.18"
         },
         "com.netflix.servo:servo-core": {
             "firstLevelTransitive": [
@@ -617,7 +617,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.10.1"
+            "locked": "1.10.2"
         },
         "com.netflix.zuul:zuul-core": {
             "project": true
@@ -752,19 +752,19 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.84"
+            "locked": "1.85"
         },
         "org.bouncycastle:bcprov-jdk18on": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.84"
+            "locked": "1.85"
         },
         "org.bouncycastle:bctls-jdk18on": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.84"
+            "locked": "1.85"
         },
         "org.jspecify:jspecify": {
             "firstLevelTransitive": [
@@ -801,7 +801,7 @@
             "locked": "2.0.17"
         },
         "org.wiremock:wiremock": {
-            "locked": "3.10.0"
+            "locked": "3.13.2"
         }
     },
     "runtimeClasspath": {
@@ -848,26 +848,26 @@
                 "com.netflix.zuul:zuul-core",
                 "com.netflix.zuul:zuul-discovery"
             ],
-            "locked": "2.4.4"
+            "locked": "2.7.18"
         },
         "com.netflix.ribbon:ribbon-core": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core",
                 "com.netflix.zuul:zuul-discovery"
             ],
-            "locked": "2.4.4"
+            "locked": "2.7.18"
         },
         "com.netflix.ribbon:ribbon-eureka": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-discovery"
             ],
-            "locked": "2.4.4"
+            "locked": "2.7.18"
         },
         "com.netflix.ribbon:ribbon-loadbalancer": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-discovery"
             ],
-            "locked": "2.4.4"
+            "locked": "2.7.18"
         },
         "com.netflix.servo:servo-core": {
             "firstLevelTransitive": [
@@ -879,7 +879,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.10.1"
+            "locked": "1.10.2"
         },
         "com.netflix.zuul:zuul-core": {
             "project": true
@@ -1058,22 +1058,22 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.4.4"
+            "locked": "2.7.18"
         },
         "com.netflix.ribbon:ribbon-core": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.4.4"
+            "locked": "2.7.18"
         },
         "com.netflix.ribbon:ribbon-eureka": {
-            "locked": "2.4.4"
+            "locked": "2.7.18"
         },
         "com.netflix.ribbon:ribbon-loadbalancer": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-discovery"
             ],
-            "locked": "2.4.4"
+            "locked": "2.7.18"
         },
         "com.netflix.servo:servo-core": {
             "firstLevelTransitive": [
@@ -1085,7 +1085,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.10.1"
+            "locked": "1.10.2"
         },
         "com.netflix.zuul:zuul-core": {
             "project": true
@@ -1205,7 +1205,7 @@
             "locked": "2.0.17"
         },
         "org.wiremock:wiremock": {
-            "locked": "3.10.0"
+            "locked": "3.13.2"
         }
     },
     "testRuntimeClasspath": {
@@ -1241,7 +1241,7 @@
                 "com.netflix.zuul:zuul-core",
                 "com.netflix.zuul:zuul-discovery"
             ],
-            "locked": "33.3.1-jre"
+            "locked": "33.5.0-jre"
         },
         "com.netflix.archaius:archaius-core": {
             "firstLevelTransitive": [
@@ -1267,26 +1267,26 @@
                 "com.netflix.zuul:zuul-core",
                 "com.netflix.zuul:zuul-discovery"
             ],
-            "locked": "2.4.4"
+            "locked": "2.7.18"
         },
         "com.netflix.ribbon:ribbon-core": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core",
                 "com.netflix.zuul:zuul-discovery"
             ],
-            "locked": "2.4.4"
+            "locked": "2.7.18"
         },
         "com.netflix.ribbon:ribbon-eureka": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-discovery"
             ],
-            "locked": "2.4.4"
+            "locked": "2.7.18"
         },
         "com.netflix.ribbon:ribbon-loadbalancer": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-discovery"
             ],
-            "locked": "2.4.4"
+            "locked": "2.7.18"
         },
         "com.netflix.servo:servo-core": {
             "firstLevelTransitive": [
@@ -1298,7 +1298,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.10.1"
+            "locked": "1.10.2"
         },
         "com.netflix.zuul:zuul-core": {
             "project": true
@@ -1433,19 +1433,19 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.84"
+            "locked": "1.85"
         },
         "org.bouncycastle:bcprov-jdk18on": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.84"
+            "locked": "1.85"
         },
         "org.bouncycastle:bctls-jdk18on": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.84"
+            "locked": "1.85"
         },
         "org.jspecify:jspecify": {
             "firstLevelTransitive": [
@@ -1476,7 +1476,7 @@
             "locked": "2.0.17"
         },
         "org.wiremock:wiremock": {
-            "locked": "3.10.0"
+            "locked": "3.13.2"
         }
     }
 }
