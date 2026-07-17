@@ -4,6 +4,7 @@ dependencies {
 
     constraints {
         implementation 'com.google.code.gson:gson:2.14.0'
+        implementation 'com.thoughtworks.xstream:xstream:1.4.21'
     }
 
     implementation libraries.guava
