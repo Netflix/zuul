@@ -53,6 +53,9 @@
         "com.netflix.zuul:zuul-discovery": {
             "project": true
         },
+        "com.thoughtworks.xstream:xstream": {
+            "locked": "1.4.21"
+        },
         "io.netty:netty-bom": {
             "locked": "4.2.16.Final"
         },
@@ -94,6 +97,9 @@
         },
         "jakarta.inject:jakarta.inject-api": {
             "locked": "2.0.1"
+        },
+        "org.apache.httpcomponents:httpclient": {
+            "locked": "4.5.14"
         },
         "org.bouncycastle:bcpkix-jdk18on": {
             "locked": "1.85"
@@ -181,6 +187,9 @@
         "com.netflix.zuul:zuul-discovery": {
             "project": true
         },
+        "com.thoughtworks.xstream:xstream": {
+            "locked": "1.4.21"
+        },
         "io.netty:netty-bom": {
             "locked": "4.2.16.Final"
         },
@@ -223,6 +232,9 @@
         "jakarta.inject:jakarta.inject-api": {
             "locked": "2.0.1"
         },
+        "org.apache.httpcomponents:httpclient": {
+            "locked": "4.5.14"
+        },
         "org.bouncycastle:bcpkix-jdk18on": {
             "locked": "1.85"
         },
@@ -257,6 +269,9 @@
         },
         "com.fasterxml.jackson.core:jackson-databind": {
             "locked": "2.22.1"
+        },
+        "com.google.code.gson:gson": {
+            "locked": "2.14.0"
         },
         "com.google.guava:guava": {
             "firstLevelTransitive": [
@@ -312,6 +327,9 @@
         "com.netflix.zuul:zuul-discovery": {
             "project": true
         },
+        "com.thoughtworks.xstream:xstream": {
+            "locked": "1.4.21"
+        },
         "commons-configuration:commons-configuration": {
             "locked": "1.10"
         },
@@ -359,6 +377,9 @@
         },
         "jakarta.inject:jakarta.inject-api": {
             "locked": "2.0.1"
+        },
+        "org.apache.httpcomponents:httpclient": {
+            "locked": "4.5.14"
         },
         "org.assertj:assertj-core": {
             "locked": "3.26.3"
@@ -422,6 +443,9 @@
         "com.fasterxml.jackson.core:jackson-databind": {
             "locked": "2.22.1"
         },
+        "com.google.code.gson:gson": {
+            "locked": "2.14.0"
+        },
         "com.google.guava:guava": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-discovery"
@@ -476,6 +500,9 @@
         "com.netflix.zuul:zuul-discovery": {
             "project": true
         },
+        "com.thoughtworks.xstream:xstream": {
+            "locked": "1.4.21"
+        },
         "io.netty:netty-bom": {
             "locked": "4.2.16.Final"
         },
@@ -520,6 +547,9 @@
         },
         "jakarta.inject:jakarta.inject-api": {
             "locked": "2.0.1"
+        },
+        "org.apache.httpcomponents:httpclient": {
+            "locked": "4.5.14"
         },
         "org.bouncycastle:bcpkix-jdk18on": {
             "locked": "1.85"
@@ -591,6 +621,9 @@
         "com.netflix.zuul:zuul-discovery": {
             "project": true
         },
+        "com.thoughtworks.xstream:xstream": {
+            "locked": "1.4.21"
+        },
         "commons-configuration:commons-configuration": {
             "locked": "1.10"
         },
@@ -635,6 +668,9 @@
         },
         "jakarta.inject:jakarta.inject-api": {
             "locked": "2.0.1"
+        },
+        "org.apache.httpcomponents:httpclient": {
+            "locked": "4.5.14"
         },
         "org.assertj:assertj-core": {
             "locked": "3.26.3"
@@ -685,6 +721,9 @@
         },
         "com.fasterxml.jackson.core:jackson-databind": {
             "locked": "2.22.1"
+        },
+        "com.google.code.gson:gson": {
+            "locked": "2.14.0"
         },
         "com.google.guava:guava": {
             "firstLevelTransitive": [
@@ -740,6 +779,9 @@
         "com.netflix.zuul:zuul-discovery": {
             "project": true
         },
+        "com.thoughtworks.xstream:xstream": {
+            "locked": "1.4.21"
+        },
         "commons-configuration:commons-configuration": {
             "locked": "1.10"
         },
@@ -787,6 +829,9 @@
         },
         "jakarta.inject:jakarta.inject-api": {
             "locked": "2.0.1"
+        },
+        "org.apache.httpcomponents:httpclient": {
+            "locked": "4.5.14"
         },
         "org.assertj:assertj-core": {
             "locked": "3.26.3"

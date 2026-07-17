@@ -29,6 +29,12 @@
         "com.netflix.servo:servo-core": {
             "locked": "0.13.2"
         },
+        "com.thoughtworks.xstream:xstream": {
+            "locked": "1.4.21"
+        },
+        "org.apache.httpcomponents:httpclient": {
+            "locked": "4.5.14"
+        },
         "org.slf4j:slf4j-api": {
             "locked": "2.0.16"
         }
@@ -76,6 +82,12 @@
         "com.netflix.servo:servo-core": {
             "locked": "0.13.2"
         },
+        "com.thoughtworks.xstream:xstream": {
+            "locked": "1.4.21"
+        },
+        "org.apache.httpcomponents:httpclient": {
+            "locked": "4.5.14"
+        },
         "org.openjdk.jmh:jmh-core": {
             "locked": "1.36"
         },
@@ -87,6 +99,9 @@
         }
     },
     "jmhRuntimeClasspath": {
+        "com.google.code.gson:gson": {
+            "locked": "2.14.0"
+        },
         "com.google.guava:guava": {
             "locked": "33.3.0-jre"
         },
@@ -107,6 +122,12 @@
         },
         "com.netflix.servo:servo-core": {
             "locked": "0.13.2"
+        },
+        "com.thoughtworks.xstream:xstream": {
+            "locked": "1.4.21"
+        },
+        "org.apache.httpcomponents:httpclient": {
+            "locked": "4.5.14"
         },
         "org.assertj:assertj-core": {
             "locked": "3.26.3"
@@ -137,6 +158,9 @@
         }
     },
     "runtimeClasspath": {
+        "com.google.code.gson:gson": {
+            "locked": "2.14.0"
+        },
         "com.google.guava:guava": {
             "locked": "33.3.0-jre"
         },
@@ -157,6 +181,12 @@
         },
         "com.netflix.servo:servo-core": {
             "locked": "0.13.2"
+        },
+        "com.thoughtworks.xstream:xstream": {
+            "locked": "1.4.21"
+        },
+        "org.apache.httpcomponents:httpclient": {
+            "locked": "4.5.14"
         },
         "org.slf4j:slf4j-api": {
             "locked": "2.0.16"
@@ -192,6 +222,12 @@
         "com.netflix.servo:servo-core": {
             "locked": "0.13.2"
         },
+        "com.thoughtworks.xstream:xstream": {
+            "locked": "1.4.21"
+        },
+        "org.apache.httpcomponents:httpclient": {
+            "locked": "4.5.14"
+        },
         "org.assertj:assertj-core": {
             "locked": "3.26.3"
         },
@@ -215,6 +251,9 @@
         }
     },
     "testRuntimeClasspath": {
+        "com.google.code.gson:gson": {
+            "locked": "2.14.0"
+        },
         "com.google.guava:guava": {
             "locked": "33.3.0-jre"
         },
@@ -235,6 +274,12 @@
         },
         "com.netflix.servo:servo-core": {
             "locked": "0.13.2"
+        },
+        "com.thoughtworks.xstream:xstream": {
+            "locked": "1.4.21"
+        },
+        "org.apache.httpcomponents:httpclient": {
+            "locked": "4.5.14"
         },
         "org.assertj:assertj-core": {
             "locked": "3.26.3"
