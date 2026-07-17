@@ -15,16 +15,16 @@
             "locked": "2.0.4"
         },
         "com.netflix.ribbon:ribbon-archaius": {
-            "locked": "2.4.4"
+            "locked": "2.7.18"
         },
         "com.netflix.ribbon:ribbon-core": {
-            "locked": "2.4.4"
+            "locked": "2.7.18"
         },
         "com.netflix.ribbon:ribbon-eureka": {
-            "locked": "2.4.4"
+            "locked": "2.7.18"
         },
         "com.netflix.ribbon:ribbon-loadbalancer": {
-            "locked": "2.4.4"
+            "locked": "2.7.18"
         },
         "com.netflix.servo:servo-core": {
             "locked": "0.13.2"
@@ -62,16 +62,16 @@
             "locked": "2.0.4"
         },
         "com.netflix.ribbon:ribbon-archaius": {
-            "locked": "2.4.4"
+            "locked": "2.7.18"
         },
         "com.netflix.ribbon:ribbon-core": {
-            "locked": "2.4.4"
+            "locked": "2.7.18"
         },
         "com.netflix.ribbon:ribbon-eureka": {
-            "locked": "2.4.4"
+            "locked": "2.7.18"
         },
         "com.netflix.ribbon:ribbon-loadbalancer": {
-            "locked": "2.4.4"
+            "locked": "2.7.18"
         },
         "com.netflix.servo:servo-core": {
             "locked": "0.13.2"
@@ -94,16 +94,16 @@
             "locked": "2.0.4"
         },
         "com.netflix.ribbon:ribbon-archaius": {
-            "locked": "2.4.4"
+            "locked": "2.7.18"
         },
         "com.netflix.ribbon:ribbon-core": {
-            "locked": "2.4.4"
+            "locked": "2.7.18"
         },
         "com.netflix.ribbon:ribbon-eureka": {
-            "locked": "2.4.4"
+            "locked": "2.7.18"
         },
         "com.netflix.ribbon:ribbon-loadbalancer": {
-            "locked": "2.4.4"
+            "locked": "2.7.18"
         },
         "com.netflix.servo:servo-core": {
             "locked": "0.13.2"
@@ -144,16 +144,16 @@
             "locked": "2.0.4"
         },
         "com.netflix.ribbon:ribbon-archaius": {
-            "locked": "2.4.4"
+            "locked": "2.7.18"
         },
         "com.netflix.ribbon:ribbon-core": {
-            "locked": "2.4.4"
+            "locked": "2.7.18"
         },
         "com.netflix.ribbon:ribbon-eureka": {
-            "locked": "2.4.4"
+            "locked": "2.7.18"
         },
         "com.netflix.ribbon:ribbon-loadbalancer": {
-            "locked": "2.4.4"
+            "locked": "2.7.18"
         },
         "com.netflix.servo:servo-core": {
             "locked": "0.13.2"
@@ -178,16 +178,16 @@
             "locked": "2.0.4"
         },
         "com.netflix.ribbon:ribbon-archaius": {
-            "locked": "2.4.4"
+            "locked": "2.7.18"
         },
         "com.netflix.ribbon:ribbon-core": {
-            "locked": "2.4.4"
+            "locked": "2.7.18"
         },
         "com.netflix.ribbon:ribbon-eureka": {
-            "locked": "2.4.4"
+            "locked": "2.7.18"
         },
         "com.netflix.ribbon:ribbon-loadbalancer": {
-            "locked": "2.4.4"
+            "locked": "2.7.18"
         },
         "com.netflix.servo:servo-core": {
             "locked": "0.13.2"
@@ -222,16 +222,16 @@
             "locked": "2.0.4"
         },
         "com.netflix.ribbon:ribbon-archaius": {
-            "locked": "2.4.4"
+            "locked": "2.7.18"
         },
         "com.netflix.ribbon:ribbon-core": {
-            "locked": "2.4.4"
+            "locked": "2.7.18"
         },
         "com.netflix.ribbon:ribbon-eureka": {
-            "locked": "2.4.4"
+            "locked": "2.7.18"
         },
         "com.netflix.ribbon:ribbon-loadbalancer": {
-            "locked": "2.4.4"
+            "locked": "2.7.18"
         },
         "com.netflix.servo:servo-core": {
             "locked": "0.13.2"
