@@ -157,6 +157,20 @@ class StripUntrustedProxyHeadersHandlerTest {
         assertThat(headers.contains("x-forwarded-for")).isFalse();
     }
 
+    @Test
+    void strip_hostRewritingHeaders() {
+        StripUntrustedProxyHeadersHandler stripHandler = getHandler(AllowWhen.MUTUAL_SSL_AUTH);
+
+        headers.add("x-forwarded-host", "evil.attacker.com");
+        headers.add("x-forwarded-prefix", "/evil");
+        headers.add("forwarded", "host=evil.attacker.com");
+        stripHandler.stripXFFHeaders(msg);
+
+        assertThat(headers.contains("x-forwarded-host")).isFalse();
+        assertThat(headers.contains("x-forwarded-prefix")).isFalse();
+        assertThat(headers.contains("forwarded")).isFalse();
+    }
+
     private StripUntrustedProxyHeadersHandler getHandler(AllowWhen allowWhen) {
         return spy(new StripUntrustedProxyHeadersHandler(allowWhen));
     }
