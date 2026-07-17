@@ -12,10 +12,10 @@
     },
     "compileClasspath": {
         "com.fasterxml.jackson.core:jackson-core": {
-            "locked": "2.22.1"
+            "locked": "2.19.2"
         },
         "com.fasterxml.jackson.core:jackson-databind": {
-            "locked": "2.22.1"
+            "locked": "2.19.2"
         },
         "com.google.guava:guava": {
             "locked": "33.3.0-jre"
@@ -48,7 +48,7 @@
             "locked": "0.13.2"
         },
         "com.netflix.spectator:spectator-api": {
-            "locked": "1.10.2"
+            "locked": "1.10.1"
         },
         "com.netflix.zuul:zuul-discovery": {
             "project": true
@@ -140,10 +140,10 @@
     },
     "jmhCompileClasspath": {
         "com.fasterxml.jackson.core:jackson-core": {
-            "locked": "2.22.1"
+            "locked": "2.19.2"
         },
         "com.fasterxml.jackson.core:jackson-databind": {
-            "locked": "2.22.1"
+            "locked": "2.19.2"
         },
         "com.google.guava:guava": {
             "locked": "33.3.0-jre"
@@ -176,7 +176,7 @@
             "locked": "0.13.2"
         },
         "com.netflix.spectator:spectator-api": {
-            "locked": "1.10.2"
+            "locked": "1.10.1"
         },
         "com.netflix.zuul:zuul-discovery": {
             "project": true
@@ -253,10 +253,10 @@
     },
     "jmhRuntimeClasspath": {
         "com.fasterxml.jackson.core:jackson-core": {
-            "locked": "2.22.1"
+            "locked": "2.19.2"
         },
         "com.fasterxml.jackson.core:jackson-databind": {
-            "locked": "2.22.1"
+            "locked": "2.19.2"
         },
         "com.google.guava:guava": {
             "firstLevelTransitive": [
@@ -307,7 +307,7 @@
             "locked": "0.13.2"
         },
         "com.netflix.spectator:spectator-api": {
-            "locked": "1.10.2"
+            "locked": "1.10.1"
         },
         "com.netflix.zuul:zuul-discovery": {
             "project": true
@@ -417,10 +417,10 @@
     },
     "runtimeClasspath": {
         "com.fasterxml.jackson.core:jackson-core": {
-            "locked": "2.22.1"
+            "locked": "2.19.2"
         },
         "com.fasterxml.jackson.core:jackson-databind": {
-            "locked": "2.22.1"
+            "locked": "2.19.2"
         },
         "com.google.guava:guava": {
             "firstLevelTransitive": [
@@ -471,7 +471,7 @@
             "locked": "0.13.2"
         },
         "com.netflix.spectator:spectator-api": {
-            "locked": "1.10.2"
+            "locked": "1.10.1"
         },
         "com.netflix.zuul:zuul-discovery": {
             "project": true
@@ -550,10 +550,10 @@
     },
     "testCompileClasspath": {
         "com.fasterxml.jackson.core:jackson-core": {
-            "locked": "2.22.1"
+            "locked": "2.19.2"
         },
         "com.fasterxml.jackson.core:jackson-databind": {
-            "locked": "2.22.1"
+            "locked": "2.19.2"
         },
         "com.google.guava:guava": {
             "locked": "33.3.0-jre"
@@ -586,7 +586,7 @@
             "locked": "0.13.2"
         },
         "com.netflix.spectator:spectator-api": {
-            "locked": "1.10.2"
+            "locked": "1.10.1"
         },
         "com.netflix.zuul:zuul-discovery": {
             "project": true
@@ -681,10 +681,10 @@
     },
     "testRuntimeClasspath": {
         "com.fasterxml.jackson.core:jackson-core": {
-            "locked": "2.22.1"
+            "locked": "2.19.2"
         },
         "com.fasterxml.jackson.core:jackson-databind": {
-            "locked": "2.22.1"
+            "locked": "2.19.2"
         },
         "com.google.guava:guava": {
             "firstLevelTransitive": [
@@ -735,7 +735,7 @@
             "locked": "0.13.2"
         },
         "com.netflix.spectator:spectator-api": {
-            "locked": "1.10.2"
+            "locked": "1.10.1"
         },
         "com.netflix.zuul:zuul-discovery": {
             "project": true
