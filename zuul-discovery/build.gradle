@@ -2,6 +2,10 @@ apply plugin: "java-library"
 
 dependencies {
 
+    constraints {
+        implementation 'com.google.code.gson:gson:2.14.0'
+    }
+
     implementation libraries.guava
     implementation libraries.slf4j
 

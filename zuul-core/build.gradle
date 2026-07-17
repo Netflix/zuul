@@ -3,6 +3,10 @@ apply plugin: "java-library"
 
 dependencies {
 
+    constraints {
+        implementation 'com.google.code.gson:gson:2.14.0'
+    }
+
     compileOnly libraries.lombok
     testCompileOnly(libraries.lombok)
     annotationProcessor(libraries.lombok)
