@@ -737,10 +737,10 @@
             "locked": "3.18.0"
         },
         "org.apache.logging.log4j:log4j-core": {
-            "locked": "2.25.4"
+            "locked": "2.26.1"
         },
         "org.apache.logging.log4j:log4j-slf4j2-impl": {
-            "locked": "2.25.2"
+            "locked": "2.26.1"
         },
         "org.assertj:assertj-core": {
             "locked": "3.27.7"
@@ -1418,10 +1418,10 @@
             "locked": "3.18.0"
         },
         "org.apache.logging.log4j:log4j-core": {
-            "locked": "2.25.4"
+            "locked": "2.26.1"
         },
         "org.apache.logging.log4j:log4j-slf4j2-impl": {
-            "locked": "2.25.2"
+            "locked": "2.26.1"
         },
         "org.assertj:assertj-core": {
             "locked": "3.27.7"
