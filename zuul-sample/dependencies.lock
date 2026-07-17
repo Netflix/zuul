@@ -342,13 +342,13 @@
             "locked": "2.0.1"
         },
         "org.apache.logging.log4j:log4j-api": {
-            "locked": "2.25.1"
+            "locked": "2.26.1"
         },
         "org.apache.logging.log4j:log4j-core": {
-            "locked": "2.25.1"
+            "locked": "2.26.1"
         },
         "org.apache.logging.log4j:log4j-slf4j-impl": {
-            "locked": "2.25.1"
+            "locked": "2.26.1"
         },
         "org.jspecify:jspecify": {
             "firstLevelTransitive": [
@@ -509,13 +509,13 @@
             "locked": "2.0.1"
         },
         "org.apache.logging.log4j:log4j-api": {
-            "locked": "2.25.1"
+            "locked": "2.26.1"
         },
         "org.apache.logging.log4j:log4j-core": {
-            "locked": "2.25.1"
+            "locked": "2.26.1"
         },
         "org.apache.logging.log4j:log4j-slf4j-impl": {
-            "locked": "2.25.1"
+            "locked": "2.26.1"
         },
         "org.jspecify:jspecify": {
             "firstLevelTransitive": [
@@ -719,13 +719,13 @@
             "locked": "2.0.1"
         },
         "org.apache.logging.log4j:log4j-api": {
-            "locked": "2.25.1"
+            "locked": "2.26.1"
         },
         "org.apache.logging.log4j:log4j-core": {
-            "locked": "2.25.1"
+            "locked": "2.26.1"
         },
         "org.apache.logging.log4j:log4j-slf4j-impl": {
-            "locked": "2.25.1"
+            "locked": "2.26.1"
         },
         "org.bouncycastle:bcpkix-jdk18on": {
             "firstLevelTransitive": [
@@ -948,13 +948,13 @@
             "locked": "2.0.1"
         },
         "org.apache.logging.log4j:log4j-api": {
-            "locked": "2.25.1"
+            "locked": "2.26.1"
         },
         "org.apache.logging.log4j:log4j-core": {
-            "locked": "2.25.1"
+            "locked": "2.26.1"
         },
         "org.apache.logging.log4j:log4j-slf4j-impl": {
-            "locked": "2.25.1"
+            "locked": "2.26.1"
         },
         "org.bouncycastle:bcpkix-jdk18on": {
             "firstLevelTransitive": [
@@ -1121,13 +1121,13 @@
             "locked": "2.0.1"
         },
         "org.apache.logging.log4j:log4j-api": {
-            "locked": "2.25.1"
+            "locked": "2.26.1"
         },
         "org.apache.logging.log4j:log4j-core": {
-            "locked": "2.25.1"
+            "locked": "2.26.1"
         },
         "org.apache.logging.log4j:log4j-slf4j-impl": {
-            "locked": "2.25.1"
+            "locked": "2.26.1"
         },
         "org.jspecify:jspecify": {
             "firstLevelTransitive": [
@@ -1325,13 +1325,13 @@
             "locked": "2.0.1"
         },
         "org.apache.logging.log4j:log4j-api": {
-            "locked": "2.25.1"
+            "locked": "2.26.1"
         },
         "org.apache.logging.log4j:log4j-core": {
-            "locked": "2.25.1"
+            "locked": "2.26.1"
         },
         "org.apache.logging.log4j:log4j-slf4j-impl": {
-            "locked": "2.25.1"
+            "locked": "2.26.1"
         },
         "org.bouncycastle:bcpkix-jdk18on": {
             "firstLevelTransitive": [
