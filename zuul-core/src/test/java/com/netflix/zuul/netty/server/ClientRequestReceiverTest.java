@@ -612,6 +612,71 @@ class ClientRequestReceiverTest {
     }
 
     @Test
+    void pathTraversal_literalMultiDotSegmentPreserved() {
+        EmbeddedChannel channel = new EmbeddedChannel(new ClientRequestReceiver(null));
+        channel.attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT).set(1234);
+        HttpRequestMessageImpl result;
+        {
+            channel.writeInbound(
+                    new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/..../admin", Unpooled.buffer()));
+            result = channel.readInbound();
+            result.disposeBufferedBody();
+        }
+
+        assertThat(result.getPath()).isEqualTo("/..../admin");
+        channel.close();
+    }
+
+    @Test
+    void pathTraversal_literalMultiDotWithEmptySegment() {
+        EmbeddedChannel channel = new EmbeddedChannel(new ClientRequestReceiver(null));
+        channel.attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT).set(1234);
+        HttpRequestMessageImpl result;
+        {
+            channel.writeInbound(new DefaultFullHttpRequest(
+                    HttpVersion.HTTP_1_1, HttpMethod.GET, "/....//etc/passwd", Unpooled.buffer()));
+            result = channel.readInbound();
+            result.disposeBufferedBody();
+        }
+
+        assertThat(result.getPath()).isEqualTo("/..../etc/passwd");
+        channel.close();
+    }
+
+    @Test
+    void pathTraversal_threeDotSegmentPreserved() {
+        EmbeddedChannel channel = new EmbeddedChannel(new ClientRequestReceiver(null));
+        channel.attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT).set(1234);
+        HttpRequestMessageImpl result;
+        {
+            channel.writeInbound(
+                    new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/.../admin", Unpooled.buffer()));
+            result = channel.readInbound();
+            result.disposeBufferedBody();
+        }
+
+        assertThat(result.getPath()).isEqualTo("/.../admin");
+        channel.close();
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"/%2e%2e%2e%2e//admin", "/%2E%2E%2E%2E//admin"})
+    void pathTraversal_encodedMultiDotSegmentPreserved(String uri) {
+        EmbeddedChannel channel = new EmbeddedChannel(new ClientRequestReceiver(null));
+        channel.attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT).set(1234);
+        HttpRequestMessageImpl result;
+        {
+            channel.writeInbound(
+                    new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, uri, Unpooled.buffer()));
+            result = channel.readInbound();
+            result.disposeBufferedBody();
+        }
+
+        assertThat(result.getPath()).isEqualTo("/..../admin");
+        channel.close();
+    }
+
+    @Test
     void opaqueUri_rejected() {
         EmbeddedChannel channel = new EmbeddedChannel(new ClientRequestReceiver(null));
         channel.attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT).set(1234);
