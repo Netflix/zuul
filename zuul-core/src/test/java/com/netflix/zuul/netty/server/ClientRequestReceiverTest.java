@@ -67,13 +67,10 @@ class ClientRequestReceiverTest {
         channel.attr(SourceAddressChannelHandler.ATTR_PROXY_PROTOCOL_DESTINATION_ADDRESS)
                 .set(hapmDestinationAddress);
         channel.attr(SourceAddressChannelHandler.ATTR_LOCAL_ADDR).set(hapmDestinationAddress);
-        HttpRequestMessageImpl result;
-        {
-            channel.writeInbound(
-                    new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, "/post", Unpooled.buffer()));
-            result = channel.readInbound();
-            result.disposeBufferedBody();
-        }
+        channel.writeInbound(
+                new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, "/post", Unpooled.buffer()));
+        HttpRequestMessageImpl result = channel.readInbound();
+        result.disposeBufferedBody();
         assertThat(hapmDestinationAddress.getPort())
                 .isEqualTo((int) result.getClientDestinationPort().get());
         int destinationPort = ((InetSocketAddress)
@@ -89,16 +86,13 @@ class ClientRequestReceiverTest {
 
         EmbeddedChannel channel = new EmbeddedChannel(new ClientRequestReceiver(null));
         channel.attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT).set(1234);
-        HttpRequestMessageImpl result;
-        {
-            channel.writeInbound(new DefaultFullHttpRequest(
-                    HttpVersion.HTTP_1_1,
-                    HttpMethod.POST,
-                    "/foo/bar/somePath/%5E1.0.0?param1=foo&param2=bar&param3=baz",
-                    Unpooled.buffer()));
-            result = channel.readInbound();
-            result.disposeBufferedBody();
-        }
+        channel.writeInbound(new DefaultFullHttpRequest(
+                HttpVersion.HTTP_1_1,
+                HttpMethod.POST,
+                "/foo/bar/somePath/%5E1.0.0?param1=foo&param2=bar&param3=baz",
+                Unpooled.buffer()));
+        HttpRequestMessageImpl result = channel.readInbound();
+        result.disposeBufferedBody();
 
         assertThat(result.getPath()).isEqualTo("/foo/bar/somePath/%5E1.0.0");
 
@@ -110,16 +104,13 @@ class ClientRequestReceiverTest {
 
         EmbeddedChannel channel = new EmbeddedChannel(new ClientRequestReceiver(null));
         channel.attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT).set(1234);
-        HttpRequestMessageImpl result;
-        {
-            channel.writeInbound(new DefaultFullHttpRequest(
-                    HttpVersion.HTTP_1_1,
-                    HttpMethod.POST,
-                    "https://www.netflix.com/foo/bar/somePath/%5E1.0.0?param1=foo&param2=bar&param3=baz",
-                    Unpooled.buffer()));
-            result = channel.readInbound();
-            result.disposeBufferedBody();
-        }
+        channel.writeInbound(new DefaultFullHttpRequest(
+                HttpVersion.HTTP_1_1,
+                HttpMethod.POST,
+                "https://www.netflix.com/foo/bar/somePath/%5E1.0.0?param1=foo&param2=bar&param3=baz",
+                Unpooled.buffer()));
+        HttpRequestMessageImpl result = channel.readInbound();
+        result.disposeBufferedBody();
 
         assertThat(result.getPath()).isEqualTo("/foo/bar/somePath/%5E1.0.0");
 
@@ -131,13 +122,10 @@ class ClientRequestReceiverTest {
 
         EmbeddedChannel channel = new EmbeddedChannel(new ClientRequestReceiver(null));
         channel.attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT).set(1234);
-        HttpRequestMessageImpl result;
-        {
-            channel.writeInbound(
-                    new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, "asdf", Unpooled.buffer()));
-            result = channel.readInbound();
-            result.disposeBufferedBody();
-        }
+        channel.writeInbound(
+                new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, "asdf", Unpooled.buffer()));
+        HttpRequestMessageImpl result = channel.readInbound();
+        result.disposeBufferedBody();
 
         assertThat(result.getPath()).isEqualTo("asdf");
 
@@ -149,16 +137,13 @@ class ClientRequestReceiverTest {
 
         EmbeddedChannel channel = new EmbeddedChannel(new ClientRequestReceiver(null));
         channel.attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT).set(1234);
-        HttpRequestMessageImpl result;
-        {
-            channel.writeInbound(new DefaultFullHttpRequest(
-                    HttpVersion.HTTP_1_1,
-                    HttpMethod.POST,
-                    "/foo/bar/somePath/%5E1.0.0?param1=foo&param2=bar&param3=baz",
-                    Unpooled.buffer()));
-            result = channel.readInbound();
-            result.disposeBufferedBody();
-        }
+        channel.writeInbound(new DefaultFullHttpRequest(
+                HttpVersion.HTTP_1_1,
+                HttpMethod.POST,
+                "/foo/bar/somePath/%5E1.0.0?param1=foo&param2=bar&param3=baz",
+                Unpooled.buffer()));
+        HttpRequestMessageImpl result = channel.readInbound();
+        result.disposeBufferedBody();
 
         assertThat(result.getQueryParams().getFirst("param1")).isEqualTo("foo");
         assertThat(result.getQueryParams().getFirst("param2")).isEqualTo("bar");
@@ -184,14 +169,11 @@ class ClientRequestReceiverTest {
             res.disposeBufferedBody();
         }
 
-        HttpRequestMessageImpl result;
-        {
-            ByteBuf buf = Unpooled.buffer(maxSize);
-            buf.writerIndex(maxSize);
-            channel.writeInbound(new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, "/post", buf));
-            result = channel.readInbound();
-            result.disposeBufferedBody();
-        }
+        ByteBuf buf = Unpooled.buffer(maxSize);
+        buf.writerIndex(maxSize);
+        channel.writeInbound(new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, "/post", buf));
+        HttpRequestMessageImpl result = channel.readInbound();
+        result.disposeBufferedBody();
 
         assertThat(result.getContext().getError()).isNull();
         assertThat(result.getContext().shouldSendErrorResponse()).isFalse();
@@ -215,14 +197,11 @@ class ClientRequestReceiverTest {
             res.disposeBufferedBody();
         }
 
-        HttpRequestMessageImpl result;
-        {
-            ByteBuf buf = Unpooled.buffer(maxSize + 1);
-            buf.writerIndex(maxSize + 1);
-            channel.writeInbound(new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, "/post", buf));
-            result = channel.readInbound();
-            result.disposeBufferedBody();
-        }
+        ByteBuf buf = Unpooled.buffer(maxSize + 1);
+        buf.writerIndex(maxSize + 1);
+        channel.writeInbound(new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, "/post", buf));
+        HttpRequestMessageImpl result = channel.readInbound();
+        result.disposeBufferedBody();
 
         assertThat(result.getContext().getError()).isNotNull();
         assertThat(result.getContext().getError().getMessage().contains("too large"))
@@ -484,13 +463,10 @@ class ClientRequestReceiverTest {
     void pathTraversal_basicDotDot() {
         EmbeddedChannel channel = new EmbeddedChannel(new ClientRequestReceiver(null));
         channel.attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT).set(1234);
-        HttpRequestMessageImpl result;
-        {
-            channel.writeInbound(new DefaultFullHttpRequest(
-                    HttpVersion.HTTP_1_1, HttpMethod.GET, "/public/../admin/", Unpooled.buffer()));
-            result = channel.readInbound();
-            result.disposeBufferedBody();
-        }
+        channel.writeInbound(new DefaultFullHttpRequest(
+                HttpVersion.HTTP_1_1, HttpMethod.GET, "/public/../admin/", Unpooled.buffer()));
+        HttpRequestMessageImpl result = channel.readInbound();
+        result.disposeBufferedBody();
 
         assertThat(result.getPath()).isEqualTo("/admin/");
         channel.close();
@@ -500,13 +476,10 @@ class ClientRequestReceiverTest {
     void pathTraversal_multipleDotDots() {
         EmbeddedChannel channel = new EmbeddedChannel(new ClientRequestReceiver(null));
         channel.attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT).set(1234);
-        HttpRequestMessageImpl result;
-        {
-            channel.writeInbound(new DefaultFullHttpRequest(
-                    HttpVersion.HTTP_1_1, HttpMethod.GET, "/a/b/c/../../d/", Unpooled.buffer()));
-            result = channel.readInbound();
-            result.disposeBufferedBody();
-        }
+        channel.writeInbound(
+                new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/a/b/c/../../d/", Unpooled.buffer()));
+        HttpRequestMessageImpl result = channel.readInbound();
+        result.disposeBufferedBody();
 
         assertThat(result.getPath()).isEqualTo("/a/d/");
         channel.close();
@@ -516,13 +489,10 @@ class ClientRequestReceiverTest {
     void pathTraversal_dotSegments() {
         EmbeddedChannel channel = new EmbeddedChannel(new ClientRequestReceiver(null));
         channel.attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT).set(1234);
-        HttpRequestMessageImpl result;
-        {
-            channel.writeInbound(new DefaultFullHttpRequest(
-                    HttpVersion.HTTP_1_1, HttpMethod.GET, "/./foo/./bar/.", Unpooled.buffer()));
-            result = channel.readInbound();
-            result.disposeBufferedBody();
-        }
+        channel.writeInbound(
+                new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/./foo/./bar/.", Unpooled.buffer()));
+        HttpRequestMessageImpl result = channel.readInbound();
+        result.disposeBufferedBody();
 
         assertThat(result.getPath()).isEqualTo("/foo/bar/");
         channel.close();
@@ -532,13 +502,10 @@ class ClientRequestReceiverTest {
     void pathTraversal_multipleSlashes() {
         EmbeddedChannel channel = new EmbeddedChannel(new ClientRequestReceiver(null));
         channel.attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT).set(1234);
-        HttpRequestMessageImpl result;
-        {
-            channel.writeInbound(new DefaultFullHttpRequest(
-                    HttpVersion.HTTP_1_1, HttpMethod.GET, "//foo///bar////baz", Unpooled.buffer()));
-            result = channel.readInbound();
-            result.disposeBufferedBody();
-        }
+        channel.writeInbound(new DefaultFullHttpRequest(
+                HttpVersion.HTTP_1_1, HttpMethod.GET, "//foo///bar////baz", Unpooled.buffer()));
+        HttpRequestMessageImpl result = channel.readInbound();
+        result.disposeBufferedBody();
 
         assertThat(result.getPath()).isEqualTo("/bar/baz");
         channel.close();
@@ -549,13 +516,10 @@ class ClientRequestReceiverTest {
         EmbeddedChannel channel = new EmbeddedChannel(new ClientRequestReceiver(null));
         channel.attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT).set(1234);
 
-        HttpRequestMessageImpl result;
-        {
-            channel.writeInbound(new DefaultFullHttpRequest(
-                    HttpVersion.HTTP_1_1, HttpMethod.GET, "/../../../etc/passwd", Unpooled.buffer()));
-            result = channel.readInbound();
-            result.disposeBufferedBody();
-        }
+        channel.writeInbound(new DefaultFullHttpRequest(
+                HttpVersion.HTTP_1_1, HttpMethod.GET, "/../../../etc/passwd", Unpooled.buffer()));
+        HttpRequestMessageImpl result = channel.readInbound();
+        result.disposeBufferedBody();
 
         assertThat(result.getPath()).isEqualTo("/etc/passwd");
         channel.close();
@@ -565,13 +529,10 @@ class ClientRequestReceiverTest {
     void pathTraversal_complexMix() {
         EmbeddedChannel channel = new EmbeddedChannel(new ClientRequestReceiver(null));
         channel.attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT).set(1234);
-        HttpRequestMessageImpl result;
-        {
-            channel.writeInbound(new DefaultFullHttpRequest(
-                    HttpVersion.HTTP_1_1, HttpMethod.GET, "/foo/./bar/../baz//qux/../", Unpooled.buffer()));
-            result = channel.readInbound();
-            result.disposeBufferedBody();
-        }
+        channel.writeInbound(new DefaultFullHttpRequest(
+                HttpVersion.HTTP_1_1, HttpMethod.GET, "/foo/./bar/../baz//qux/../", Unpooled.buffer()));
+        HttpRequestMessageImpl result = channel.readInbound();
+        result.disposeBufferedBody();
 
         assertThat(result.getPath()).isEqualTo("/foo/baz/");
         channel.close();
@@ -581,13 +542,10 @@ class ClientRequestReceiverTest {
     void pathTraversal_withQueryString() {
         EmbeddedChannel channel = new EmbeddedChannel(new ClientRequestReceiver(null));
         channel.attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT).set(1234);
-        HttpRequestMessageImpl result;
-        {
-            channel.writeInbound(new DefaultFullHttpRequest(
-                    HttpVersion.HTTP_1_1, HttpMethod.GET, "/public/../admin/?param=value", Unpooled.buffer()));
-            result = channel.readInbound();
-            result.disposeBufferedBody();
-        }
+        channel.writeInbound(new DefaultFullHttpRequest(
+                HttpVersion.HTTP_1_1, HttpMethod.GET, "/public/../admin/?param=value", Unpooled.buffer()));
+        HttpRequestMessageImpl result = channel.readInbound();
+        result.disposeBufferedBody();
 
         assertThat(result.getPath()).isEqualTo("/admin/");
         assertThat(result.getQueryParams().getFirst("param")).isEqualTo("value");
@@ -599,13 +557,9 @@ class ClientRequestReceiverTest {
     void pathTraversal_encodedDotDot(String uri) {
         EmbeddedChannel channel = new EmbeddedChannel(new ClientRequestReceiver(null));
         channel.attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT).set(1234);
-        HttpRequestMessageImpl result;
-        {
-            channel.writeInbound(
-                    new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, uri, Unpooled.buffer()));
-            result = channel.readInbound();
-            result.disposeBufferedBody();
-        }
+        channel.writeInbound(new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, uri, Unpooled.buffer()));
+        HttpRequestMessageImpl result = channel.readInbound();
+        result.disposeBufferedBody();
 
         assertThat(result.getPath()).isEqualTo("/admin/");
         channel.close();
@@ -615,13 +569,10 @@ class ClientRequestReceiverTest {
     void pathTraversal_literalMultiDotSegmentPreserved() {
         EmbeddedChannel channel = new EmbeddedChannel(new ClientRequestReceiver(null));
         channel.attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT).set(1234);
-        HttpRequestMessageImpl result;
-        {
-            channel.writeInbound(
-                    new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/..../admin", Unpooled.buffer()));
-            result = channel.readInbound();
-            result.disposeBufferedBody();
-        }
+        channel.writeInbound(
+                new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/..../admin", Unpooled.buffer()));
+        HttpRequestMessageImpl result = channel.readInbound();
+        result.disposeBufferedBody();
 
         assertThat(result.getPath()).isEqualTo("/..../admin");
         channel.close();
@@ -631,13 +582,10 @@ class ClientRequestReceiverTest {
     void pathTraversal_literalMultiDotWithEmptySegment() {
         EmbeddedChannel channel = new EmbeddedChannel(new ClientRequestReceiver(null));
         channel.attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT).set(1234);
-        HttpRequestMessageImpl result;
-        {
-            channel.writeInbound(new DefaultFullHttpRequest(
-                    HttpVersion.HTTP_1_1, HttpMethod.GET, "/....//etc/passwd", Unpooled.buffer()));
-            result = channel.readInbound();
-            result.disposeBufferedBody();
-        }
+        channel.writeInbound(new DefaultFullHttpRequest(
+                HttpVersion.HTTP_1_1, HttpMethod.GET, "/....//etc/passwd", Unpooled.buffer()));
+        HttpRequestMessageImpl result = channel.readInbound();
+        result.disposeBufferedBody();
 
         assertThat(result.getPath()).isEqualTo("/..../etc/passwd");
         channel.close();
@@ -647,13 +595,10 @@ class ClientRequestReceiverTest {
     void pathTraversal_threeDotSegmentPreserved() {
         EmbeddedChannel channel = new EmbeddedChannel(new ClientRequestReceiver(null));
         channel.attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT).set(1234);
-        HttpRequestMessageImpl result;
-        {
-            channel.writeInbound(
-                    new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/.../admin", Unpooled.buffer()));
-            result = channel.readInbound();
-            result.disposeBufferedBody();
-        }
+        channel.writeInbound(
+                new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/.../admin", Unpooled.buffer()));
+        HttpRequestMessageImpl result = channel.readInbound();
+        result.disposeBufferedBody();
 
         assertThat(result.getPath()).isEqualTo("/.../admin");
         channel.close();
@@ -664,13 +609,9 @@ class ClientRequestReceiverTest {
     void pathTraversal_encodedMultiDotSegmentPreserved(String uri) {
         EmbeddedChannel channel = new EmbeddedChannel(new ClientRequestReceiver(null));
         channel.attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT).set(1234);
-        HttpRequestMessageImpl result;
-        {
-            channel.writeInbound(
-                    new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, uri, Unpooled.buffer()));
-            result = channel.readInbound();
-            result.disposeBufferedBody();
-        }
+        channel.writeInbound(new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, uri, Unpooled.buffer()));
+        HttpRequestMessageImpl result = channel.readInbound();
+        result.disposeBufferedBody();
 
         assertThat(result.getPath()).isEqualTo("/..../admin");
         channel.close();
@@ -697,13 +638,9 @@ class ClientRequestReceiverTest {
     void pathNormalization_emptyPath() {
         EmbeddedChannel channel = new EmbeddedChannel(new ClientRequestReceiver(null));
         channel.attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT).set(1234);
-        HttpRequestMessageImpl result;
-        {
-            channel.writeInbound(
-                    new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "", Unpooled.buffer()));
-            result = channel.readInbound();
-            result.disposeBufferedBody();
-        }
+        channel.writeInbound(new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "", Unpooled.buffer()));
+        HttpRequestMessageImpl result = channel.readInbound();
+        result.disposeBufferedBody();
 
         assertThat(result.getPath()).isEqualTo("");
         channel.close();
@@ -713,13 +650,9 @@ class ClientRequestReceiverTest {
     void pathNormalization_rootOnly() {
         EmbeddedChannel channel = new EmbeddedChannel(new ClientRequestReceiver(null));
         channel.attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT).set(1234);
-        HttpRequestMessageImpl result;
-        {
-            channel.writeInbound(
-                    new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/", Unpooled.buffer()));
-            result = channel.readInbound();
-            result.disposeBufferedBody();
-        }
+        channel.writeInbound(new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/", Unpooled.buffer()));
+        HttpRequestMessageImpl result = channel.readInbound();
+        result.disposeBufferedBody();
 
         assertThat(result.getPath()).isEqualTo("/");
         channel.close();
