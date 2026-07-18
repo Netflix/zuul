@@ -16,11 +16,10 @@
 
 package com.netflix.zuul.netty.server;
 
-import static com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteEvent;
-import static com.netflix.netty.common.HttpLifecycleChannelHandler.StartEvent;
-
 import com.google.common.annotations.VisibleForTesting;
+import com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteEvent;
 import com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteReason;
+import com.netflix.netty.common.HttpLifecycleChannelHandler.StartEvent;
 import com.netflix.spectator.api.Counter;
 import com.netflix.spectator.api.NoopRegistry;
 import com.netflix.spectator.api.Registry;

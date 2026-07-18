@@ -16,10 +16,9 @@
 
 package com.netflix.zuul.netty.connectionpool;
 
-import static com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteEvent;
-import static com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteReason;
-
 import com.netflix.netty.common.HttpClientLifecycleChannelHandler;
+import com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteEvent;
+import com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteReason;
 import com.netflix.spectator.api.Spectator;
 import com.netflix.zuul.netty.ChannelUtils;
 import com.netflix.zuul.origins.OriginName;

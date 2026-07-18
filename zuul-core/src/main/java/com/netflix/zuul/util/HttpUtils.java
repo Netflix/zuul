@@ -70,7 +70,7 @@ public class HttpUtils {
             return null;
         }
         xForwardedFor = xForwardedFor.trim();
-        String tokenized[] = xForwardedFor.split(",", -1);
+        String[] tokenized = xForwardedFor.split(",", -1);
         if (tokenized.length == 0) {
             return null;
         } else {

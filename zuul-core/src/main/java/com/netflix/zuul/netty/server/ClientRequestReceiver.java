@@ -16,9 +16,8 @@
 
 package com.netflix.zuul.netty.server;
 
-import static com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteEvent;
-import static com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteReason;
-
+import com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteEvent;
+import com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteReason;
 import com.netflix.netty.common.SourceAddressChannelHandler;
 import com.netflix.netty.common.ssl.SslHandshakeInfo;
 import com.netflix.netty.common.throttle.RejectionUtils;

@@ -106,11 +106,41 @@ subprojects {
                 "-Xep:RemoveUnusedImports:ERROR",
                 "-Xep:WildcardImport:ERROR",
 
+                // Additional low-risk checks: mechanical, behavior-preserving fixes
+                "-Xep:MixedArrayDimensions:ERROR",
+                "-Xep:UnnecessaryStaticImport:ERROR",
+                "-Xep:UnnecessaryFinal:ERROR",
+
+                // Additional low-risk checks: unambiguous bug catchers (0 violations today)
+                "-Xep:IdentityBinaryExpression:ERROR",
+                "-Xep:AlreadyChecked:ERROR",
+                "-Xep:MissingCasesInEnumSwitch:ERROR",
+                "-Xep:HidingField:ERROR",
+                "-Xep:ReferenceEquality:ERROR",
+                "-Xep:OperatorPrecedence:ERROR",
+                "-Xep:UnusedVariable:ERROR",
+                "-Xep:UnusedMethod:ERROR",
+                "-Xep:ClassCanBeStatic:ERROR",
+                "-Xep:NarrowingCompoundAssignment:ERROR",
+                "-Xep:UnnecessaryLongToIntConversion:ERROR",
+                "-Xep:TypeParameterUnusedInFormals:ERROR",
+                "-Xep:InlineFormatString:ERROR",
+                "-Xep:BooleanLiteral:ERROR",
+
+                // Additional low-risk checks: cosmetic, behavior-preserving (0 violations today)
+                "-Xep:UnnecessaryParentheses:ERROR",
+                "-Xep:MultiVariableDeclaration:ERROR",
+                "-Xep:InconsistentCapitalization:ERROR",
+                "-Xep:UnnecessaryLambda:ERROR",
+                "-Xep:PackageLocation:ERROR",
+
                 // Crashes / known bugs in this errorprone version
                 "-Xep:Immutable:OFF",               // error_prone_annotations on compile classpath older than 2.45.0
+                // Lombok @NonNull/@SneakyThrows desugaring makes this emit unfixable false positives
+                // (e.g. @NonNull flagged as a fully-qualified NullPointerException).
+                "-Xep:UnnecessarilyFullyQualified:OFF",
 
                 // Built-in ERROR-level checks that are too noisy/unsafe to fix
-                "-Xep:IdentityBinaryExpression:OFF",
                 "-Xep:BoxedPrimitiveEquality:OFF",
                 "-Xep:ForOverride:OFF",
                 "-Xep:ImpossibleNullComparison:OFF",
@@ -119,12 +149,7 @@ subprojects {
 
                 // Require semantic judgment to fix safely (serialization, reflection, inheritance design)
                 "-Xep:EffectivelyPrivate:OFF",
-                "-Xep:UnusedMethod:OFF",
-                "-Xep:UnusedVariable:OFF",
-                "-Xep:HidingField:OFF",
                 "-Xep:ArrayRecordComponent:OFF",
-                "-Xep:ReferenceEquality:OFF",
-                "-Xep:MissingCasesInEnumSwitch:OFF",
                 "-Xep:StatementSwitchToExpressionSwitch:OFF",
                 "-Xep:StringSplitter:OFF",
                 "-Xep:BadImport:OFF",
@@ -136,7 +161,6 @@ subprojects {
                 "-Xep:DefaultCharset:OFF",
                 "-Xep:LongDoubleConversion:OFF",
                 "-Xep:JavaDurationGetSecondsToToSeconds:OFF",
-                "-Xep:TypeParameterUnusedInFormals:OFF",
                 "-Xep:UnusedTypeParameter:OFF",
                 "-Xep:InputStreamSlowMultibyteRead:OFF",
                 "-Xep:JavaTimeDefaultTimeZone:OFF",
@@ -144,14 +168,9 @@ subprojects {
                 // Arithmetic / narrowing - need case-by-case review
                 "-Xep:IntLongMath:OFF",
                 "-Xep:NarrowCalculation:OFF",
-                "-Xep:NarrowingCompoundAssignment:OFF",
-                "-Xep:UnnecessaryLongToIntConversion:OFF",
 
                 // Low value / noisy
-                "-Xep:BooleanLiteral:OFF",
-                "-Xep:InlineFormatString:OFF",
                 "-Xep:JdkObsolete:OFF",
-                "-Xep:ClassCanBeStatic:OFF",
                 "-Xep:EmptyBlockTag:OFF",
                 "-Xep:FutureReturnValueIgnored:OFF",
                 "-Xep:InlineMeSuggester:OFF",
@@ -160,14 +179,12 @@ subprojects {
 
                 // Miscellaneous
                 "-Xep:ProtectedMembersInFinalClass:OFF",
-                "-Xep:OperatorPrecedence:OFF",
                 "-Xep:AssignmentExpression:OFF",
                 "-Xep:ShortCircuitBoolean:OFF",
                 "-Xep:ParameterName:OFF",
                 "-Xep:StringCharset:OFF",
                 "-Xep:InvalidThrows:OFF",
                 "-Xep:InvalidBlockTag:OFF",
-                "-Xep:AlreadyChecked:OFF",
                 "-Xep:TypeNameShadowing:OFF",
                 "-Xep:NonApiType:OFF",
             )

@@ -358,7 +358,7 @@ public class Server {
             boolean useNio = FORCE_NIO.get();
             boolean useIoUring = FORCE_IO_URING.get();
 
-            final IoHandlerFactory handlerFactory;
+            IoHandlerFactory handlerFactory;
             if (useIoUring && ioUringIsAvailable()) {
                 channelType = IoUringServerSocketChannel.class;
                 defaultOutboundChannelType.set(IoUringSocketChannel.class);
