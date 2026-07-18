@@ -142,7 +142,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
     /* Individual retry related state */
     private volatile PooledConnection originConn;
     private volatile OriginResponseReceiver originResponseReceiver;
-    private AtomicInteger concurrentReqCount;
+    private final AtomicInteger concurrentReqCount;
     private volatile boolean receivedChunkAfterProxyStarted;
     protected int attemptNum;
     protected RequestAttempt currentRequestAttempt;

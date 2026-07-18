@@ -87,18 +87,89 @@ subprojects {
             enabled = !name.contains('Jmh') && !name.contains('Test')
             check("NullAway", CheckSeverity.ERROR)
             option("NullAway:OnlyNullMarked", "true")
+            // Strict policy mirrored from the root edgezuul build, applied to all subprojects.
             errorproneArgs.addAll(
                 // Uncomment and remove -Werror javac flag to automatically apply fixes for a check.
                 // N.B: disables all other checks while enabled.
                 // "-XepPatchChecks:UnnecessaryParentheses",
                 // "-XepPatchLocation:IN_PLACE",
+
+                // Exclude generated source files
+                "-XepExcludedPaths:.*/build/generated/.*",
+
+                // Enable disabled-by-default checks
+                "-Xep:NonCanonicalType:ERROR",
+                "-Xep:LongLiteralLowerCaseSuffix:ERROR",
+                "-Xep:ConstantPatternCompile:ERROR",
+                "-Xep:StringFormatWithLiteral:ERROR",
+                "-Xep:FieldCanBeFinal:ERROR",
+                "-Xep:RemoveUnusedImports:ERROR",
+                "-Xep:WildcardImport:ERROR",
+
+                // Crashes / known bugs in this errorprone version
+                "-Xep:Immutable:OFF",               // error_prone_annotations on compile classpath older than 2.45.0
+
+                // Built-in ERROR-level checks that are too noisy/unsafe to fix
+                "-Xep:IdentityBinaryExpression:OFF",
+                "-Xep:BoxedPrimitiveEquality:OFF",
+                "-Xep:ForOverride:OFF",
+                "-Xep:ImpossibleNullComparison:OFF",
+                "-Xep:ReturnValueIgnored:OFF",
+                "-Xep:ProtoBuilderReturnValueIgnored:OFF",
+
+                // Require semantic judgment to fix safely (serialization, reflection, inheritance design)
+                "-Xep:EffectivelyPrivate:OFF",
+                "-Xep:UnusedMethod:OFF",
+                "-Xep:UnusedVariable:OFF",
+                "-Xep:HidingField:OFF",
+                "-Xep:ArrayRecordComponent:OFF",
+                "-Xep:ReferenceEquality:OFF",
+                "-Xep:MissingCasesInEnumSwitch:OFF",
+                "-Xep:StatementSwitchToExpressionSwitch:OFF",
+                "-Xep:StringSplitter:OFF",
+                "-Xep:BadImport:OFF",
+                "-Xep:JavaLangClash:OFF",
+                "-Xep:Finally:OFF",
+
+                // Require API/design decisions across multiple modules
+                "-Xep:JavaUtilDate:OFF",
+                "-Xep:DefaultCharset:OFF",
+                "-Xep:LongDoubleConversion:OFF",
+                "-Xep:JavaDurationGetSecondsToToSeconds:OFF",
+                "-Xep:TypeParameterUnusedInFormals:OFF",
+                "-Xep:UnusedTypeParameter:OFF",
+                "-Xep:InputStreamSlowMultibyteRead:OFF",
+                "-Xep:JavaTimeDefaultTimeZone:OFF",
+
+                // Arithmetic / narrowing - need case-by-case review
+                "-Xep:IntLongMath:OFF",
+                "-Xep:NarrowCalculation:OFF",
+                "-Xep:NarrowingCompoundAssignment:OFF",
+                "-Xep:UnnecessaryLongToIntConversion:OFF",
+
+                // Low value / noisy
+                "-Xep:BooleanLiteral:OFF",
+                "-Xep:InlineFormatString:OFF",
+                "-Xep:JdkObsolete:OFF",
                 "-Xep:ClassCanBeStatic:OFF",
                 "-Xep:EmptyBlockTag:OFF",
                 "-Xep:FutureReturnValueIgnored:OFF",
                 "-Xep:InlineMeSuggester:OFF",
                 "-Xep:MissingSummary:OFF",
                 "-Xep:StringConcatToTextBlock:OFF",
+
+                // Miscellaneous
+                "-Xep:ProtectedMembersInFinalClass:OFF",
+                "-Xep:OperatorPrecedence:OFF",
                 "-Xep:AssignmentExpression:OFF",
+                "-Xep:ShortCircuitBoolean:OFF",
+                "-Xep:ParameterName:OFF",
+                "-Xep:StringCharset:OFF",
+                "-Xep:InvalidThrows:OFF",
+                "-Xep:InvalidBlockTag:OFF",
+                "-Xep:AlreadyChecked:OFF",
+                "-Xep:TypeNameShadowing:OFF",
+                "-Xep:NonApiType:OFF",
             )
         }
     }

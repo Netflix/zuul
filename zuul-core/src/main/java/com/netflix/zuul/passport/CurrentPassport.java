@@ -49,6 +49,8 @@ public class CurrentPassport {
 
     public static final AttributeKey<CurrentPassport> CHANNEL_ATTR = AttributeKey.newInstance("_current_passport");
     private static final Ticker SYSTEM_TICKER = Ticker.systemTicker();
+    private static final Pattern TO_STRING_PATTERN = Pattern.compile("CurrentPassport \\{start_ms=\\d+, \\[(.*)\\]\\}");
+    private static final Pattern STATE_PATTERN = Pattern.compile("^\\+(\\d+)=(.+)$");
     private static final Set<PassportState> CONTENT_STATES = Sets.newHashSet(
             PassportState.IN_REQ_CONTENT_RECEIVED,
             PassportState.IN_RESP_CONTENT_RECEIVED,
@@ -388,16 +390,14 @@ public class CurrentPassport {
     @VisibleForTesting
     public static CurrentPassport parseFromToString(String text) {
         CurrentPassport passport = null;
-        Pattern ptn = Pattern.compile("CurrentPassport \\{start_ms=\\d+, \\[(.*)\\]\\}");
-        Pattern ptnState = Pattern.compile("^\\+(\\d+)=(.+)$");
-        Matcher m = ptn.matcher(text);
+        Matcher m = TO_STRING_PATTERN.matcher(text);
         if (m.matches()) {
             String[] stateStrs = m.group(1).split(", ", -1);
             MockTicker ticker = new MockTicker();
             passport = new CurrentPassport(ticker);
             try (Unlocker ignored = passport.lock()) {
                 for (String stateStr : stateStrs) {
-                    Matcher stateMatch = ptnState.matcher(stateStr);
+                    Matcher stateMatch = STATE_PATTERN.matcher(stateStr);
                     if (stateMatch.matches()) {
                         String stateName = stateMatch.group(2);
                         if (stateName.equals("NOW")) {
