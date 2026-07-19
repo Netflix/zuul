@@ -17,7 +17,6 @@
 package com.netflix.netty.common.proxyprotocol;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.Sets;
 import com.netflix.config.DynamicStringListProperty;
 import com.netflix.netty.common.ssl.SslHandshakeInfo;
 import com.netflix.zuul.netty.server.ssl.SslHandshakeInfoHandler;
@@ -32,6 +31,7 @@ import io.netty.handler.ssl.ClientAuth;
 import io.netty.util.AsciiString;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Strip out any X-Forwarded-* headers from inbound http requests if connection is not trusted.
@@ -47,12 +47,15 @@ public class StripUntrustedProxyHeadersHandler extends ChannelInboundHandlerAdap
         NEVER
     }
 
-    private static final Collection<AsciiString> HEADERS_TO_STRIP = Sets.newHashSet(
+    private static final Collection<AsciiString> HEADERS_TO_STRIP = Set.of(
             new AsciiString("x-forwarded-for"),
+            new AsciiString("x-forwarded-host"),
             new AsciiString("x-forwarded-port"),
+            new AsciiString("x-forwarded-prefix"),
             new AsciiString("x-forwarded-proto"),
             new AsciiString("x-forwarded-proto-version"),
-            new AsciiString("x-real-ip"));
+            new AsciiString("x-real-ip"),
+            new AsciiString("forwarded"));
 
     private final AllowWhen allowWhen;
 
