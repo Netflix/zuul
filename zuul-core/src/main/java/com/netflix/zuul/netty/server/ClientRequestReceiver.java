@@ -435,11 +435,9 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
             throw new URISyntaxException(uri, "opaque URI");
         }
         String rawPath = uriObject.getRawPath();
-        // Fold %2E → '.' (unreserved per RFC 3986 §2.4) so normalize() can remove dot-segments.
         String prepared = rawPath.replace("%2e", ".").replace("%2E", ".");
         String normalized = new URI(prepared).normalize().getRawPath();
-        // RFC 3986 §5.2.4 discards leading "/..", but Java preserves it for relative paths.
-        while (normalized.startsWith("/..")) {
+        while (normalized.equals("/..") || normalized.startsWith("/../")) {
             normalized = normalized.substring(3);
         }
         return normalized;
