@@ -9,7 +9,7 @@
     },
     "compileClasspath": {
         "com.google.guava:guava": {
-            "locked": "33.3.0-jre"
+            "locked": "33.6.0-jre"
         },
         "com.netflix.eureka:eureka-client": {
             "locked": "2.0.4"
@@ -56,7 +56,7 @@
     },
     "jmhCompileClasspath": {
         "com.google.guava:guava": {
-            "locked": "33.3.0-jre"
+            "locked": "33.6.0-jre"
         },
         "com.netflix.eureka:eureka-client": {
             "locked": "2.0.4"
@@ -88,7 +88,7 @@
     },
     "jmhRuntimeClasspath": {
         "com.google.guava:guava": {
-            "locked": "33.3.0-jre"
+            "locked": "33.6.0-jre"
         },
         "com.netflix.eureka:eureka-client": {
             "locked": "2.0.4"
@@ -138,7 +138,7 @@
     },
     "runtimeClasspath": {
         "com.google.guava:guava": {
-            "locked": "33.3.0-jre"
+            "locked": "33.6.0-jre"
         },
         "com.netflix.eureka:eureka-client": {
             "locked": "2.0.4"
@@ -172,7 +172,7 @@
     },
     "testCompileClasspath": {
         "com.google.guava:guava": {
-            "locked": "33.3.0-jre"
+            "locked": "33.6.0-jre"
         },
         "com.netflix.eureka:eureka-client": {
             "locked": "2.0.4"
@@ -216,7 +216,7 @@
     },
     "testRuntimeClasspath": {
         "com.google.guava:guava": {
-            "locked": "33.3.0-jre"
+            "locked": "33.6.0-jre"
         },
         "com.netflix.eureka:eureka-client": {
             "locked": "2.0.4"
