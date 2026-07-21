@@ -12,10 +12,10 @@
     },
     "compileClasspath": {
         "com.fasterxml.jackson.core:jackson-core": {
-            "locked": "2.19.2"
+            "locked": "2.22.1"
         },
         "com.fasterxml.jackson.core:jackson-databind": {
-            "locked": "2.19.2"
+            "locked": "2.22.1"
         },
         "com.google.guava:guava": {
             "locked": "33.3.0-jre"
@@ -30,16 +30,16 @@
             "locked": "0.3.0"
         },
         "com.netflix.ribbon:ribbon-archaius": {
-            "locked": "2.4.4"
+            "locked": "2.7.18"
         },
         "com.netflix.ribbon:ribbon-core": {
-            "locked": "2.4.4"
+            "locked": "2.7.18"
         },
         "com.netflix.ribbon:ribbon-loadbalancer": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-discovery"
             ],
-            "locked": "2.4.4"
+            "locked": "2.7.18"
         },
         "com.netflix.servo:servo-core": {
             "firstLevelTransitive": [
@@ -48,10 +48,13 @@
             "locked": "0.13.2"
         },
         "com.netflix.spectator:spectator-api": {
-            "locked": "1.10.1"
+            "locked": "1.10.2"
         },
         "com.netflix.zuul:zuul-discovery": {
             "project": true
+        },
+        "com.thoughtworks.xstream:xstream": {
+            "locked": "1.4.21"
         },
         "io.netty:netty-bom": {
             "locked": "4.2.16.Final"
@@ -95,14 +98,17 @@
         "jakarta.inject:jakarta.inject-api": {
             "locked": "2.0.1"
         },
+        "org.apache.httpcomponents:httpclient": {
+            "locked": "4.5.14"
+        },
         "org.bouncycastle:bcpkix-jdk18on": {
-            "locked": "1.83"
+            "locked": "1.85"
         },
         "org.bouncycastle:bcprov-jdk18on": {
-            "locked": "1.83"
+            "locked": "1.85"
         },
         "org.bouncycastle:bctls-jdk18on": {
-            "locked": "1.83"
+            "locked": "1.85"
         },
         "org.jspecify:jspecify": {
             "locked": "1.0.0"
@@ -140,10 +146,10 @@
     },
     "jmhCompileClasspath": {
         "com.fasterxml.jackson.core:jackson-core": {
-            "locked": "2.19.2"
+            "locked": "2.22.1"
         },
         "com.fasterxml.jackson.core:jackson-databind": {
-            "locked": "2.19.2"
+            "locked": "2.22.1"
         },
         "com.google.guava:guava": {
             "locked": "33.3.0-jre"
@@ -158,16 +164,16 @@
             "locked": "0.3.0"
         },
         "com.netflix.ribbon:ribbon-archaius": {
-            "locked": "2.4.4"
+            "locked": "2.7.18"
         },
         "com.netflix.ribbon:ribbon-core": {
-            "locked": "2.4.4"
+            "locked": "2.7.18"
         },
         "com.netflix.ribbon:ribbon-loadbalancer": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-discovery"
             ],
-            "locked": "2.4.4"
+            "locked": "2.7.18"
         },
         "com.netflix.servo:servo-core": {
             "firstLevelTransitive": [
@@ -176,10 +182,13 @@
             "locked": "0.13.2"
         },
         "com.netflix.spectator:spectator-api": {
-            "locked": "1.10.1"
+            "locked": "1.10.2"
         },
         "com.netflix.zuul:zuul-discovery": {
             "project": true
+        },
+        "com.thoughtworks.xstream:xstream": {
+            "locked": "1.4.21"
         },
         "io.netty:netty-bom": {
             "locked": "4.2.16.Final"
@@ -223,14 +232,17 @@
         "jakarta.inject:jakarta.inject-api": {
             "locked": "2.0.1"
         },
+        "org.apache.httpcomponents:httpclient": {
+            "locked": "4.5.14"
+        },
         "org.bouncycastle:bcpkix-jdk18on": {
-            "locked": "1.83"
+            "locked": "1.85"
         },
         "org.bouncycastle:bcprov-jdk18on": {
-            "locked": "1.83"
+            "locked": "1.85"
         },
         "org.bouncycastle:bctls-jdk18on": {
-            "locked": "1.83"
+            "locked": "1.85"
         },
         "org.jspecify:jspecify": {
             "locked": "1.0.0"
@@ -253,10 +265,13 @@
     },
     "jmhRuntimeClasspath": {
         "com.fasterxml.jackson.core:jackson-core": {
-            "locked": "2.19.2"
+            "locked": "2.22.1"
         },
         "com.fasterxml.jackson.core:jackson-databind": {
-            "locked": "2.19.2"
+            "locked": "2.22.1"
+        },
+        "com.google.code.gson:gson": {
+            "locked": "2.14.0"
         },
         "com.google.guava:guava": {
             "firstLevelTransitive": [
@@ -280,25 +295,25 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-discovery"
             ],
-            "locked": "2.4.4"
+            "locked": "2.7.18"
         },
         "com.netflix.ribbon:ribbon-core": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-discovery"
             ],
-            "locked": "2.4.4"
+            "locked": "2.7.18"
         },
         "com.netflix.ribbon:ribbon-eureka": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-discovery"
             ],
-            "locked": "2.4.4"
+            "locked": "2.7.18"
         },
         "com.netflix.ribbon:ribbon-loadbalancer": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-discovery"
             ],
-            "locked": "2.4.4"
+            "locked": "2.7.18"
         },
         "com.netflix.servo:servo-core": {
             "firstLevelTransitive": [
@@ -307,10 +322,13 @@
             "locked": "0.13.2"
         },
         "com.netflix.spectator:spectator-api": {
-            "locked": "1.10.1"
+            "locked": "1.10.2"
         },
         "com.netflix.zuul:zuul-discovery": {
             "project": true
+        },
+        "com.thoughtworks.xstream:xstream": {
+            "locked": "1.4.21"
         },
         "commons-configuration:commons-configuration": {
             "locked": "1.10"
@@ -360,6 +378,9 @@
         "jakarta.inject:jakarta.inject-api": {
             "locked": "2.0.1"
         },
+        "org.apache.httpcomponents:httpclient": {
+            "locked": "4.5.14"
+        },
         "org.assertj:assertj-core": {
             "locked": "3.26.3"
         },
@@ -367,13 +388,13 @@
             "locked": "4.2.2"
         },
         "org.bouncycastle:bcpkix-jdk18on": {
-            "locked": "1.83"
+            "locked": "1.85"
         },
         "org.bouncycastle:bcprov-jdk18on": {
-            "locked": "1.83"
+            "locked": "1.85"
         },
         "org.bouncycastle:bctls-jdk18on": {
-            "locked": "1.83"
+            "locked": "1.85"
         },
         "org.jspecify:jspecify": {
             "locked": "1.0.0"
@@ -417,10 +438,13 @@
     },
     "runtimeClasspath": {
         "com.fasterxml.jackson.core:jackson-core": {
-            "locked": "2.19.2"
+            "locked": "2.22.1"
         },
         "com.fasterxml.jackson.core:jackson-databind": {
-            "locked": "2.19.2"
+            "locked": "2.22.1"
+        },
+        "com.google.code.gson:gson": {
+            "locked": "2.14.0"
         },
         "com.google.guava:guava": {
             "firstLevelTransitive": [
@@ -444,25 +468,25 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-discovery"
             ],
-            "locked": "2.4.4"
+            "locked": "2.7.18"
         },
         "com.netflix.ribbon:ribbon-core": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-discovery"
             ],
-            "locked": "2.4.4"
+            "locked": "2.7.18"
         },
         "com.netflix.ribbon:ribbon-eureka": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-discovery"
             ],
-            "locked": "2.4.4"
+            "locked": "2.7.18"
         },
         "com.netflix.ribbon:ribbon-loadbalancer": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-discovery"
             ],
-            "locked": "2.4.4"
+            "locked": "2.7.18"
         },
         "com.netflix.servo:servo-core": {
             "firstLevelTransitive": [
@@ -471,10 +495,13 @@
             "locked": "0.13.2"
         },
         "com.netflix.spectator:spectator-api": {
-            "locked": "1.10.1"
+            "locked": "1.10.2"
         },
         "com.netflix.zuul:zuul-discovery": {
             "project": true
+        },
+        "com.thoughtworks.xstream:xstream": {
+            "locked": "1.4.21"
         },
         "io.netty:netty-bom": {
             "locked": "4.2.16.Final"
@@ -521,14 +548,17 @@
         "jakarta.inject:jakarta.inject-api": {
             "locked": "2.0.1"
         },
+        "org.apache.httpcomponents:httpclient": {
+            "locked": "4.5.14"
+        },
         "org.bouncycastle:bcpkix-jdk18on": {
-            "locked": "1.83"
+            "locked": "1.85"
         },
         "org.bouncycastle:bcprov-jdk18on": {
-            "locked": "1.83"
+            "locked": "1.85"
         },
         "org.bouncycastle:bctls-jdk18on": {
-            "locked": "1.83"
+            "locked": "1.85"
         },
         "org.jspecify:jspecify": {
             "locked": "1.0.0"
@@ -550,10 +580,10 @@
     },
     "testCompileClasspath": {
         "com.fasterxml.jackson.core:jackson-core": {
-            "locked": "2.19.2"
+            "locked": "2.22.1"
         },
         "com.fasterxml.jackson.core:jackson-databind": {
-            "locked": "2.19.2"
+            "locked": "2.22.1"
         },
         "com.google.guava:guava": {
             "locked": "33.3.0-jre"
@@ -568,16 +598,16 @@
             "locked": "0.3.0"
         },
         "com.netflix.ribbon:ribbon-archaius": {
-            "locked": "2.4.4"
+            "locked": "2.7.18"
         },
         "com.netflix.ribbon:ribbon-core": {
-            "locked": "2.4.4"
+            "locked": "2.7.18"
         },
         "com.netflix.ribbon:ribbon-loadbalancer": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-discovery"
             ],
-            "locked": "2.4.4"
+            "locked": "2.7.18"
         },
         "com.netflix.servo:servo-core": {
             "firstLevelTransitive": [
@@ -586,10 +616,13 @@
             "locked": "0.13.2"
         },
         "com.netflix.spectator:spectator-api": {
-            "locked": "1.10.1"
+            "locked": "1.10.2"
         },
         "com.netflix.zuul:zuul-discovery": {
             "project": true
+        },
+        "com.thoughtworks.xstream:xstream": {
+            "locked": "1.4.21"
         },
         "commons-configuration:commons-configuration": {
             "locked": "1.10"
@@ -636,6 +669,9 @@
         "jakarta.inject:jakarta.inject-api": {
             "locked": "2.0.1"
         },
+        "org.apache.httpcomponents:httpclient": {
+            "locked": "4.5.14"
+        },
         "org.assertj:assertj-core": {
             "locked": "3.26.3"
         },
@@ -643,13 +679,13 @@
             "locked": "4.2.2"
         },
         "org.bouncycastle:bcpkix-jdk18on": {
-            "locked": "1.83"
+            "locked": "1.85"
         },
         "org.bouncycastle:bcprov-jdk18on": {
-            "locked": "1.83"
+            "locked": "1.85"
         },
         "org.bouncycastle:bctls-jdk18on": {
-            "locked": "1.83"
+            "locked": "1.85"
         },
         "org.jspecify:jspecify": {
             "locked": "1.0.0"
@@ -681,10 +717,13 @@
     },
     "testRuntimeClasspath": {
         "com.fasterxml.jackson.core:jackson-core": {
-            "locked": "2.19.2"
+            "locked": "2.22.1"
         },
         "com.fasterxml.jackson.core:jackson-databind": {
-            "locked": "2.19.2"
+            "locked": "2.22.1"
+        },
+        "com.google.code.gson:gson": {
+            "locked": "2.14.0"
         },
         "com.google.guava:guava": {
             "firstLevelTransitive": [
@@ -708,25 +747,25 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-discovery"
             ],
-            "locked": "2.4.4"
+            "locked": "2.7.18"
         },
         "com.netflix.ribbon:ribbon-core": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-discovery"
             ],
-            "locked": "2.4.4"
+            "locked": "2.7.18"
         },
         "com.netflix.ribbon:ribbon-eureka": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-discovery"
             ],
-            "locked": "2.4.4"
+            "locked": "2.7.18"
         },
         "com.netflix.ribbon:ribbon-loadbalancer": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-discovery"
             ],
-            "locked": "2.4.4"
+            "locked": "2.7.18"
         },
         "com.netflix.servo:servo-core": {
             "firstLevelTransitive": [
@@ -735,10 +774,13 @@
             "locked": "0.13.2"
         },
         "com.netflix.spectator:spectator-api": {
-            "locked": "1.10.1"
+            "locked": "1.10.2"
         },
         "com.netflix.zuul:zuul-discovery": {
             "project": true
+        },
+        "com.thoughtworks.xstream:xstream": {
+            "locked": "1.4.21"
         },
         "commons-configuration:commons-configuration": {
             "locked": "1.10"
@@ -788,6 +830,9 @@
         "jakarta.inject:jakarta.inject-api": {
             "locked": "2.0.1"
         },
+        "org.apache.httpcomponents:httpclient": {
+            "locked": "4.5.14"
+        },
         "org.assertj:assertj-core": {
             "locked": "3.26.3"
         },
@@ -795,13 +840,13 @@
             "locked": "4.2.2"
         },
         "org.bouncycastle:bcpkix-jdk18on": {
-            "locked": "1.83"
+            "locked": "1.85"
         },
         "org.bouncycastle:bcprov-jdk18on": {
-            "locked": "1.83"
+            "locked": "1.85"
         },
         "org.bouncycastle:bctls-jdk18on": {
-            "locked": "1.83"
+            "locked": "1.85"
         },
         "org.jspecify:jspecify": {
             "locked": "1.0.0"
