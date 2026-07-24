@@ -2,7 +2,7 @@ import net.ltgt.gradle.errorprone.CheckSeverity
 
 buildscript {
     dependencies {
-        classpath 'com.palantir.javaformat:gradle-palantir-java-format:2.94.0'
+        classpath 'com.palantir.javaformat:gradle-palantir-java-format:2.96.0'
     }
 }
 
