@@ -17,7 +17,7 @@ dependencies {
     testImplementation libraries.assertj, libraries.awaitility, libraries.jupiterApi, libraries.jupiterParams, libraries.jupiterEngine, libraries.junitPlatformLauncher, libraries.jupiterMockito, libraries.okhttp
     testImplementation "io.netty:netty-transport-native-io_uring"
 //    testImplementation "io.netty.incubator:netty-transport-native-io_uring::linux-x86_64"
-    testImplementation "org.slf4j:slf4j-api:2.0.16"
+    testImplementation "org.slf4j:slf4j-api:2.0.18"
     testImplementation 'org.apache.commons:commons-lang3:3.20.0'
     // netty-parent owns the brotli4j version, so brotli4j tracks whatever the current
     // netty release depends on without pinning it ourselves.

@@ -127,7 +127,7 @@ subprojects {
                 jupiterMockito: 'org.mockito:mockito-junit-jupiter:5.13.+',
                 mockito: 'org.mockito:mockito-core:5.+',
 
-                slf4j: "org.slf4j:slf4j-api:2.0.16",
+                slf4j: "org.slf4j:slf4j-api:2.0.18",
                 assertj: 'org.assertj:assertj-core:3.26.3',
                 awaitility: 'org.awaitility:awaitility:4.2.2',
                 lombok: 'org.projectlombok:lombok:1.18.42'
