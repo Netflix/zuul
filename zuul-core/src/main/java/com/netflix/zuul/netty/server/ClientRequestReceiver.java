@@ -67,7 +67,6 @@ import io.perfmark.PerfMark;
 import io.perfmark.TaskCloseable;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Iterator;
 import java.util.Locale;
@@ -370,7 +369,7 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
         // Strip off the query from the path.
         String path;
         try {
-            path = parsePath(preProcessPath(nativeRequest.uri()));
+            path = HttpUtils.parsePath(preProcessPath(nativeRequest.uri()));
         } catch (URISyntaxException ex) {
             path = nativeRequest.uri();
             context.put(CommonContextKeys.BAD_URI_REASON, ex.getReason());
@@ -422,25 +421,6 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
 
     protected String preProcessPath(String uri) {
         return uri;
-    }
-
-    private String parsePath(String uri) throws URISyntaxException {
-        int queryIndex = uri.indexOf('?');
-        if (queryIndex > -1) {
-            uri = uri.substring(0, queryIndex);
-        }
-
-        URI uriObject = new URI(uri);
-        if (uriObject.isOpaque()) {
-            throw new URISyntaxException(uri, "opaque URI");
-        }
-        String rawPath = uriObject.getRawPath();
-        String prepared = rawPath.replace("%2e", ".").replace("%2E", ".");
-        String normalized = new URI(prepared).normalize().getRawPath();
-        while (normalized.equals("/..") || normalized.startsWith("/../")) {
-            normalized = normalized.substring(3);
-        }
-        return normalized;
     }
 
     private static Headers copyHeaders(HttpRequest req) {

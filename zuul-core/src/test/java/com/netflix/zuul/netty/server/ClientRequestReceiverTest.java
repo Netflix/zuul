@@ -100,36 +100,21 @@ class ClientRequestReceiverTest {
     }
 
     @Test
-    void parseUriFromNetty_absolute() {
-
-        EmbeddedChannel channel = new EmbeddedChannel(new ClientRequestReceiver(null));
-        channel.attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT).set(1234);
-        channel.writeInbound(new DefaultFullHttpRequest(
-                HttpVersion.HTTP_1_1,
-                HttpMethod.POST,
-                "https://www.netflix.com/foo/bar/somePath/%5E1.0.0?param1=foo&param2=bar&param3=baz",
-                Unpooled.buffer()));
-        HttpRequestMessageImpl result = channel.readInbound();
-        result.disposeBufferedBody();
-
-        assertThat(result.getPath()).isEqualTo("/foo/bar/somePath/%5E1.0.0");
-
-        channel.close();
-    }
-
-    @Test
-    void parseUriFromNetty_unknown() {
-
+    void unknownFormUri_rejected() {
         EmbeddedChannel channel = new EmbeddedChannel(new ClientRequestReceiver(null));
         channel.attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT).set(1234);
         channel.writeInbound(
                 new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, "asdf", Unpooled.buffer()));
-        HttpRequestMessageImpl result = channel.readInbound();
-        result.disposeBufferedBody();
-
-        assertThat(result.getPath()).isEqualTo("asdf");
-
+        channel.readInbound();
         channel.close();
+
+        HttpRequestMessage request = ClientRequestReceiver.getRequestFromChannel(channel);
+        SessionContext context = request.getContext();
+        assertThat(context.get(CommonContextKeys.BAD_URI_REASON)).isEqualTo("path does not start with leading slash");
+        assertThat(StatusCategoryUtils.getStatusCategory(context))
+                .isEqualTo(ZuulStatusCategory.FAILURE_CLIENT_BAD_REQUEST);
+        // Raw URI preserved for access logging.
+        assertThat(request.getPath()).isEqualTo("asdf");
     }
 
     @Test
@@ -618,7 +603,7 @@ class ClientRequestReceiverTest {
     }
 
     @Test
-    void opaqueUri_rejected() {
+    void authorityFormUri_rejected() {
         EmbeddedChannel channel = new EmbeddedChannel(new ClientRequestReceiver(null));
         channel.attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT).set(1234);
         channel.writeInbound(new DefaultFullHttpRequest(
@@ -631,19 +616,23 @@ class ClientRequestReceiverTest {
         assertThat(context.get(CommonContextKeys.BAD_URI_REASON)).isNotNull();
         assertThat(StatusCategoryUtils.getStatusCategory(context))
                 .isEqualTo(ZuulStatusCategory.FAILURE_CLIENT_BAD_REQUEST);
-        assertThat(StatusCategoryUtils.getStatusCategoryReason(context)).isEqualTo("opaque URI");
+        assertThat(StatusCategoryUtils.getStatusCategoryReason(context))
+                .isEqualTo("path does not start with leading slash");
     }
 
     @Test
-    void pathNormalization_emptyPath() {
+    void emptyUri_rejected() {
         EmbeddedChannel channel = new EmbeddedChannel(new ClientRequestReceiver(null));
         channel.attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT).set(1234);
         channel.writeInbound(new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "", Unpooled.buffer()));
-        HttpRequestMessageImpl result = channel.readInbound();
-        result.disposeBufferedBody();
-
-        assertThat(result.getPath()).isEqualTo("");
+        channel.readInbound();
         channel.close();
+
+        SessionContext context =
+                ClientRequestReceiver.getRequestFromChannel(channel).getContext();
+        assertThat(context.get(CommonContextKeys.BAD_URI_REASON)).isEqualTo("path does not start with leading slash");
+        assertThat(StatusCategoryUtils.getStatusCategory(context))
+                .isEqualTo(ZuulStatusCategory.FAILURE_CLIENT_BAD_REQUEST);
     }
 
     @Test
