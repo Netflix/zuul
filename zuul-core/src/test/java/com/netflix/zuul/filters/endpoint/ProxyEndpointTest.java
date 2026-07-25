@@ -263,6 +263,44 @@ class ProxyEndpointTest {
     }
 
     @Test
+    void closeNotifyConnectionRetriedOnlyForIdempotentMethods() {
+        // POST (non-idempotent): the origin may have already processed the request before sending
+        // close_notify, so retrying risks duplicating side effects -> must NOT retry.
+        assertThat(proxyEndpoint.isRetryable(OutboundErrorType.CLOSE_NOTIFY_CONNECTION))
+                .isFalse();
+
+        // GET (idempotent): safe to replay on a fresh connection -> must retry.
+        HttpRequestMessage getRequest = createRequest(context, "GET", "/some/where");
+        getRequest.setBody(new byte[0]);
+        getRequest.storeInboundRequest();
+        ProxyEndpoint getProxyEndpoint =
+                spy(new ProxyEndpoint(getRequest, chc, null, MethodBinding.NO_OP_BINDING, attemptFactory) {
+                    @Override
+                    public NettyOrigin getOrigin(HttpRequestMessage request) {
+                        return nettyOrigin;
+                    }
+
+                    @Override
+                    protected OriginTimeoutManager getTimeoutManager(NettyOrigin origin) {
+                        return timeoutManager;
+                    }
+                });
+
+        assertThat(getProxyEndpoint.isRetryable(OutboundErrorType.CLOSE_NOTIFY_CONNECTION))
+                .isTrue();
+    }
+
+    @Test
+    void connectionErrorsRetriedForAnyMethod() {
+        // Regression guard: RESET_CONNECTION and CONNECT_ERROR must stay retryable for all methods,
+        // including a non-idempotent (POST) request. A '&&' instead of '||' here would make the
+        // condition impossible and silently disable connection-failure retries.
+        assertThat(proxyEndpoint.isRetryable(OutboundErrorType.RESET_CONNECTION))
+                .isTrue();
+        assertThat(proxyEndpoint.isRetryable(OutboundErrorType.CONNECT_ERROR)).isTrue();
+    }
+
+    @Test
     public void lastContentAfterProxyStartedIsConsideredReplayable() {
         Promise<PooledConnection> promise = channel.eventLoop().newPromise();
 

@@ -799,14 +799,23 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
     }
 
     protected boolean isRetryable(ErrorType err) {
-        if ((err == OutboundErrorType.RESET_CONNECTION)
-                || (err == OutboundErrorType.CONNECT_ERROR)
-                || (err == OutboundErrorType.READ_TIMEOUT
-                        && IDEMPOTENT_HTTP_METHODS.contains(
-                                zuulRequest.getMethod().toUpperCase(Locale.ROOT)))) {
+        // Connection failures: safe to retry for ANY method, because the origin almost
+        // certainly never processed the request.
+        if (err == OutboundErrorType.RESET_CONNECTION || err == OutboundErrorType.CONNECT_ERROR) {
             return isRequestReplayable();
         }
+
+        // Ambiguous failures: the origin MAY have already processed the request, so only
+        // retry idempotent methods to avoid duplicating side effects.
+        if (err == OutboundErrorType.READ_TIMEOUT || err == OutboundErrorType.CLOSE_NOTIFY_CONNECTION) {
+            return isIdempotentRequest(zuulRequest) && isRequestReplayable();
+        }
+
         return false;
+    }
+
+    private static boolean isIdempotentRequest(HttpRequestMessage request) {
+        return IDEMPOTENT_HTTP_METHODS.contains(request.getMethod().toUpperCase(Locale.ROOT));
     }
 
     /**
@@ -1033,7 +1042,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
             }
             // Retry if this is an idempotent http method AND status code was retriable for idempotent methods.
             else if (RETRIABLE_STATUSES_FOR_IDEMPOTENT_METHODS.get().contains(status)
-                    && IDEMPOTENT_HTTP_METHODS.contains(zuulRequest.getMethod().toUpperCase(Locale.ROOT))) {
+                    && isIdempotentRequest(zuulRequest)) {
                 return true;
             }
         }
