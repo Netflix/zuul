@@ -4,7 +4,7 @@
             "locked": "2.45.0"
         },
         "com.uber.nullaway:nullaway": {
-            "locked": "0.13.7"
+            "locked": "0.13.8"
         },
         "org.projectlombok:lombok": {
             "locked": "1.18.42"
@@ -24,7 +24,7 @@
             "locked": "0.7.12"
         },
         "com.netflix.eureka:eureka-client": {
-            "locked": "2.0.4"
+            "locked": "2.0.6"
         },
         "com.netflix.netflix-commons:netflix-commons-util": {
             "locked": "0.3.0"
@@ -48,7 +48,7 @@
             "locked": "0.13.2"
         },
         "com.netflix.spectator:spectator-api": {
-            "locked": "1.10.2"
+            "locked": "1.10.4"
         },
         "com.netflix.zuul:zuul-discovery": {
             "project": true
@@ -111,7 +111,7 @@
             "locked": "1.18.42"
         },
         "org.slf4j:slf4j-api": {
-            "locked": "2.0.16"
+            "locked": "2.0.18"
         }
     },
     "errorproneJavac": {
@@ -135,7 +135,7 @@
             "locked": "2.45.0"
         },
         "com.uber.nullaway:nullaway": {
-            "locked": "0.13.7"
+            "locked": "0.13.8"
         }
     },
     "jmhCompileClasspath": {
@@ -152,7 +152,7 @@
             "locked": "0.7.12"
         },
         "com.netflix.eureka:eureka-client": {
-            "locked": "2.0.4"
+            "locked": "2.0.6"
         },
         "com.netflix.netflix-commons:netflix-commons-util": {
             "locked": "0.3.0"
@@ -176,7 +176,7 @@
             "locked": "0.13.2"
         },
         "com.netflix.spectator:spectator-api": {
-            "locked": "1.10.2"
+            "locked": "1.10.4"
         },
         "com.netflix.zuul:zuul-discovery": {
             "project": true
@@ -248,7 +248,7 @@
             "locked": "1.18.42"
         },
         "org.slf4j:slf4j-api": {
-            "locked": "2.0.16"
+            "locked": "2.0.18"
         }
     },
     "jmhRuntimeClasspath": {
@@ -271,7 +271,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-discovery"
             ],
-            "locked": "2.0.4"
+            "locked": "2.0.6"
         },
         "com.netflix.netflix-commons:netflix-commons-util": {
             "locked": "0.3.0"
@@ -307,7 +307,7 @@
             "locked": "0.13.2"
         },
         "com.netflix.spectator:spectator-api": {
-            "locked": "1.10.2"
+            "locked": "1.10.4"
         },
         "com.netflix.zuul:zuul-discovery": {
             "project": true
@@ -409,7 +409,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-discovery"
             ],
-            "locked": "2.0.17"
+            "locked": "2.0.18"
         },
         "org.slf4j:slf4j-simple": {
             "locked": "2.0.17"
@@ -435,7 +435,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-discovery"
             ],
-            "locked": "2.0.4"
+            "locked": "2.0.6"
         },
         "com.netflix.netflix-commons:netflix-commons-util": {
             "locked": "0.3.0"
@@ -471,7 +471,7 @@
             "locked": "0.13.2"
         },
         "com.netflix.spectator:spectator-api": {
-            "locked": "1.10.2"
+            "locked": "1.10.4"
         },
         "com.netflix.zuul:zuul-discovery": {
             "project": true
@@ -537,7 +537,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-discovery"
             ],
-            "locked": "2.0.16"
+            "locked": "2.0.18"
         }
     },
     "testAnnotationProcessor": {
@@ -545,7 +545,7 @@
             "locked": "2.45.0"
         },
         "com.uber.nullaway:nullaway": {
-            "locked": "0.13.7"
+            "locked": "0.13.8"
         }
     },
     "testCompileClasspath": {
@@ -562,7 +562,7 @@
             "locked": "0.7.12"
         },
         "com.netflix.eureka:eureka-client": {
-            "locked": "2.0.4"
+            "locked": "2.0.6"
         },
         "com.netflix.netflix-commons:netflix-commons-util": {
             "locked": "0.3.0"
@@ -586,7 +586,7 @@
             "locked": "0.13.2"
         },
         "com.netflix.spectator:spectator-api": {
-            "locked": "1.10.2"
+            "locked": "1.10.4"
         },
         "com.netflix.zuul:zuul-discovery": {
             "project": true
@@ -676,7 +676,7 @@
             "locked": "1.18.42"
         },
         "org.slf4j:slf4j-api": {
-            "locked": "2.0.16"
+            "locked": "2.0.18"
         }
     },
     "testRuntimeClasspath": {
@@ -699,7 +699,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-discovery"
             ],
-            "locked": "2.0.4"
+            "locked": "2.0.6"
         },
         "com.netflix.netflix-commons:netflix-commons-util": {
             "locked": "0.3.0"
@@ -735,7 +735,7 @@
             "locked": "0.13.2"
         },
         "com.netflix.spectator:spectator-api": {
-            "locked": "1.10.2"
+            "locked": "1.10.4"
         },
         "com.netflix.zuul:zuul-discovery": {
             "project": true
@@ -828,7 +828,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-discovery"
             ],
-            "locked": "2.0.17"
+            "locked": "2.0.18"
         },
         "org.slf4j:slf4j-simple": {
             "locked": "2.0.17"

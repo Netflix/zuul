@@ -4,7 +4,7 @@
             "locked": "2.45.0"
         },
         "com.uber.nullaway:nullaway": {
-            "locked": "0.13.7"
+            "locked": "0.13.8"
         }
     },
     "compileClasspath": {
@@ -27,7 +27,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.0.4"
+            "locked": "2.0.6"
         },
         "com.netflix.netflix-commons:netflix-commons-util": {
             "firstLevelTransitive": [
@@ -63,7 +63,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.10.2"
+            "locked": "1.10.4"
         },
         "com.netflix.zuul:zuul-core": {
             "project": true
@@ -138,7 +138,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.0.16"
+            "locked": "2.0.18"
         }
     },
     "errorproneJavac": {
@@ -159,7 +159,7 @@
             "locked": "2.45.0"
         },
         "com.uber.nullaway:nullaway": {
-            "locked": "0.13.7"
+            "locked": "0.13.8"
         }
     },
     "jmhCompileClasspath": {
@@ -182,7 +182,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.0.4"
+            "locked": "2.0.6"
         },
         "com.netflix.netflix-commons:netflix-commons-util": {
             "firstLevelTransitive": [
@@ -218,7 +218,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.10.2"
+            "locked": "1.10.4"
         },
         "com.netflix.zuul:zuul-core": {
             "project": true
@@ -299,7 +299,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.0.16"
+            "locked": "2.0.18"
         }
     },
     "jmhRuntimeClasspath": {
@@ -333,7 +333,7 @@
                 "com.netflix.zuul:zuul-core",
                 "com.netflix.zuul:zuul-discovery"
             ],
-            "locked": "2.0.4"
+            "locked": "2.0.6"
         },
         "com.netflix.netflix-commons:netflix-commons-util": {
             "firstLevelTransitive": [
@@ -377,7 +377,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.10.2"
+            "locked": "1.10.4"
         },
         "com.netflix.zuul:zuul-core": {
             "project": true
@@ -528,7 +528,7 @@
                 "com.netflix.zuul:zuul-core",
                 "com.netflix.zuul:zuul-discovery"
             ],
-            "locked": "2.0.16"
+            "locked": "2.0.18"
         }
     },
     "runtimeClasspath": {
@@ -562,7 +562,7 @@
                 "com.netflix.zuul:zuul-core",
                 "com.netflix.zuul:zuul-discovery"
             ],
-            "locked": "2.0.4"
+            "locked": "2.0.6"
         },
         "com.netflix.netflix-commons:netflix-commons-util": {
             "firstLevelTransitive": [
@@ -606,7 +606,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.10.2"
+            "locked": "1.10.4"
         },
         "com.netflix.zuul:zuul-core": {
             "project": true
@@ -736,7 +736,7 @@
                 "com.netflix.zuul:zuul-core",
                 "com.netflix.zuul:zuul-discovery"
             ],
-            "locked": "2.0.16"
+            "locked": "2.0.18"
         }
     },
     "testAnnotationProcessor": {
@@ -774,7 +774,7 @@
                 "com.netflix.zuul:zuul-core",
                 "com.netflix.zuul:zuul-discovery"
             ],
-            "locked": "2.0.4"
+            "locked": "2.0.6"
         },
         "com.netflix.netflix-commons:netflix-commons-util": {
             "firstLevelTransitive": [
@@ -818,7 +818,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.10.2"
+            "locked": "1.10.4"
         },
         "com.netflix.zuul:zuul-core": {
             "firstLevelTransitive": [
@@ -836,7 +836,7 @@
             "project": true
         },
         "com.uber.nullaway:nullaway": {
-            "locked": "0.13.7"
+            "locked": "0.13.8"
         },
         "io.netty:netty-bom": {
             "firstLevelTransitive": [
@@ -957,7 +957,7 @@
                 "com.netflix.zuul:zuul-core",
                 "com.netflix.zuul:zuul-discovery"
             ],
-            "locked": "2.0.16"
+            "locked": "2.0.18"
         }
     },
     "testCompileClasspath": {
@@ -980,7 +980,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.0.4"
+            "locked": "2.0.6"
         },
         "com.netflix.netflix-commons:netflix-commons-util": {
             "firstLevelTransitive": [
@@ -1016,7 +1016,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.10.2"
+            "locked": "1.10.4"
         },
         "com.netflix.zuul:zuul-core": {
             "project": true
@@ -1106,7 +1106,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.0.16"
+            "locked": "2.0.18"
         }
     },
     "testRuntimeClasspath": {
@@ -1140,7 +1140,7 @@
                 "com.netflix.zuul:zuul-core",
                 "com.netflix.zuul:zuul-discovery"
             ],
-            "locked": "2.0.4"
+            "locked": "2.0.6"
         },
         "com.netflix.netflix-commons:netflix-commons-util": {
             "firstLevelTransitive": [
@@ -1184,7 +1184,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.10.2"
+            "locked": "1.10.4"
         },
         "com.netflix.zuul:zuul-core": {
             "project": true
@@ -1329,7 +1329,7 @@
                 "com.netflix.zuul:zuul-core",
                 "com.netflix.zuul:zuul-discovery"
             ],
-            "locked": "2.0.16"
+            "locked": "2.0.18"
         }
     }
 }

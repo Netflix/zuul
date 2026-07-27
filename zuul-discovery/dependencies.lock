@@ -4,7 +4,7 @@
             "locked": "2.45.0"
         },
         "com.uber.nullaway:nullaway": {
-            "locked": "0.13.7"
+            "locked": "0.13.8"
         }
     },
     "compileClasspath": {
@@ -12,7 +12,7 @@
             "locked": "33.6.0-jre"
         },
         "com.netflix.eureka:eureka-client": {
-            "locked": "2.0.4"
+            "locked": "2.0.6"
         },
         "com.netflix.ribbon:ribbon-archaius": {
             "locked": "2.4.4"
@@ -30,7 +30,7 @@
             "locked": "0.13.2"
         },
         "org.slf4j:slf4j-api": {
-            "locked": "2.0.16"
+            "locked": "2.0.18"
         }
     },
     "errorproneJavac": {
@@ -51,7 +51,7 @@
             "locked": "2.45.0"
         },
         "com.uber.nullaway:nullaway": {
-            "locked": "0.13.7"
+            "locked": "0.13.8"
         }
     },
     "jmhCompileClasspath": {
@@ -59,7 +59,7 @@
             "locked": "33.6.0-jre"
         },
         "com.netflix.eureka:eureka-client": {
-            "locked": "2.0.4"
+            "locked": "2.0.6"
         },
         "com.netflix.ribbon:ribbon-archaius": {
             "locked": "2.4.4"
@@ -83,7 +83,7 @@
             "locked": "1.36"
         },
         "org.slf4j:slf4j-api": {
-            "locked": "2.0.16"
+            "locked": "2.0.18"
         }
     },
     "jmhRuntimeClasspath": {
@@ -91,7 +91,7 @@
             "locked": "33.6.0-jre"
         },
         "com.netflix.eureka:eureka-client": {
-            "locked": "2.0.4"
+            "locked": "2.0.6"
         },
         "com.netflix.ribbon:ribbon-archaius": {
             "locked": "2.4.4"
@@ -133,7 +133,7 @@
             "locked": "1.36"
         },
         "org.slf4j:slf4j-api": {
-            "locked": "2.0.16"
+            "locked": "2.0.18"
         }
     },
     "runtimeClasspath": {
@@ -141,7 +141,7 @@
             "locked": "33.6.0-jre"
         },
         "com.netflix.eureka:eureka-client": {
-            "locked": "2.0.4"
+            "locked": "2.0.6"
         },
         "com.netflix.ribbon:ribbon-archaius": {
             "locked": "2.4.4"
@@ -159,7 +159,7 @@
             "locked": "0.13.2"
         },
         "org.slf4j:slf4j-api": {
-            "locked": "2.0.16"
+            "locked": "2.0.18"
         }
     },
     "testAnnotationProcessor": {
@@ -167,7 +167,7 @@
             "locked": "2.45.0"
         },
         "com.uber.nullaway:nullaway": {
-            "locked": "0.13.7"
+            "locked": "0.13.8"
         }
     },
     "testCompileClasspath": {
@@ -175,7 +175,7 @@
             "locked": "33.6.0-jre"
         },
         "com.netflix.eureka:eureka-client": {
-            "locked": "2.0.4"
+            "locked": "2.0.6"
         },
         "com.netflix.ribbon:ribbon-archaius": {
             "locked": "2.4.4"
@@ -211,7 +211,7 @@
             "locked": "5.23.0"
         },
         "org.slf4j:slf4j-api": {
-            "locked": "2.0.16"
+            "locked": "2.0.18"
         }
     },
     "testRuntimeClasspath": {
@@ -219,7 +219,7 @@
             "locked": "33.6.0-jre"
         },
         "com.netflix.eureka:eureka-client": {
-            "locked": "2.0.4"
+            "locked": "2.0.6"
         },
         "com.netflix.ribbon:ribbon-archaius": {
             "locked": "2.4.4"
@@ -255,7 +255,7 @@
             "locked": "5.23.0"
         },
         "org.slf4j:slf4j-api": {
-            "locked": "2.0.16"
+            "locked": "2.0.18"
         }
     }
 }
