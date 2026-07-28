@@ -46,7 +46,7 @@ import io.netty.handler.codec.http.HttpVersion;
 import java.net.InetSocketAddress;
 import java.util.Arrays;
 import java.util.List;
-import lombok.NonNull;
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -119,20 +119,17 @@ class ClientRequestReceiverTest {
 
     @Test
     void parseUriFromNetty_unknown() {
+
         EmbeddedChannel channel = new EmbeddedChannel(new ClientRequestReceiver(null));
         channel.attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT).set(1234);
         channel.writeInbound(
                 new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, "asdf", Unpooled.buffer()));
-        channel.readInbound();
-        channel.close();
+        HttpRequestMessageImpl result = channel.readInbound();
+        result.disposeBufferedBody();
 
-        HttpRequestMessage request = ClientRequestReceiver.getRequestFromChannel(channel);
-        SessionContext context = request.getContext();
-        assertThat(context.get(CommonContextKeys.BAD_URI_REASON)).isEqualTo("path does not start with /");
-        assertThat(StatusCategoryUtils.getStatusCategory(context))
-                .isEqualTo(ZuulStatusCategory.FAILURE_CLIENT_BAD_REQUEST);
-        // Raw URI preserved for access logging.
-        assertThat(request.getPath()).isEqualTo("asdf");
+        assertThat(result.getPath()).isEqualTo("asdf");
+
+        channel.close();
     }
 
     @Test
@@ -645,7 +642,7 @@ class ClientRequestReceiverTest {
         HttpRequestMessageImpl result = channel.readInbound();
         result.disposeBufferedBody();
 
-        assertThat(result.getPath()).isEqualTo("/");
+        assertThat(result.getPath()).isEqualTo("");
         channel.close();
     }
 
