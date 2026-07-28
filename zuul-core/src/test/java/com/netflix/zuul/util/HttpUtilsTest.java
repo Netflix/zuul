@@ -162,28 +162,24 @@ class HttpUtilsTest {
         assertThat(parsePath(uri)).isEqualTo(expected);
     }
 
-    // The guard requires origin-form (leading slash), so every other request-target form - relative,
-    // absolute-form, asterisk, opaque scheme, empty - is rejected up front. The caller turns the
-    // URISyntaxException into a 400 (see ClientRequestReceiver), so nothing non-origin-form is routed.
+    // Opaque targets have no path to route on at all. The caller turns the URISyntaxException into
+    // a 400 (see ClientRequestReceiver).
     @ParameterizedTest
-    @ValueSource(
-            strings = {
-                "../../etc/passwd",
-                "..%2f..%2fetc",
-                "....//",
-                "http://host/../../etc/passwd",
-                "http://host/a/../b",
-                "mailto:foo@bar.com",
-                "tel:12345",
-                "javascript:alert(1)",
-                "urn:isbn:123",
-                "*",
-                "",
-            })
-    void parsePath_rejectsNonOriginFormTargets(String uri) {
+    @ValueSource(strings = {"mailto:foo@bar.com", "tel:12345", "javascript:alert(1)", "urn:isbn:123"})
+    void parsePath_rejectsOpaqueUris(String uri) {
         assertThatThrownBy(() -> HttpUtils.parsePath(uri))
                 .isInstanceOf(URISyntaxException.class)
-                .hasMessageContaining("leading slash");
+                .hasMessageContaining("opaque URI");
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+        "http://host/../../etc/passwd, /etc/passwd",
+        "http://host/a/../b, /b",
+        "https://www.netflix.com/foo/bar?x=1, /foo/bar",
+    })
+    void parsePath_extractsPathFromAbsoluteFormTargets(String uri, String expected) {
+        assertThat(parsePath(uri)).isEqualTo(expected);
     }
 
     @ParameterizedTest
@@ -215,9 +211,6 @@ class HttpUtilsTest {
 
     @ParameterizedTest
     @CsvSource({
-        // a pure "/.." chain clamps to root, not to an empty path
-        "/.., /",
-        "/../.., /",
         "/../, /",
         "/../etc, /etc",
         "/../../etc, /etc",

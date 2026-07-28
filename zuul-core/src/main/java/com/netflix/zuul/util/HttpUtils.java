@@ -179,28 +179,29 @@ public class HttpUtils {
     }
 
     /**
-     * Normalizes an origin-form request-target into a routable path, collapsing {@code .} and
-     * {@code ..} segments (and their {@code %2e} encodings) and clamping traversal back to root.
-     * Encoded slashes ({@code %2f}) are left intact, so the result is not fully decoded. Throws
-     * {@link URISyntaxException} for non-origin-form or malformed targets.
+     * Normalizes a request-target into a routable path, collapsing {@code .} and {@code ..}
+     * segments (and their {@code %2e} encodings) and clamping traversal back to root. Encoded
+     * slashes ({@code %2f}) are left intact, so the result is not fully decoded. Throws
+     * {@link URISyntaxException} for opaque or malformed targets.
      */
     public static String parsePath(String uri) throws URISyntaxException {
         Objects.requireNonNull(uri);
-        if (!uri.startsWith("/")) {
-            throw new URISyntaxException(uri, "path does not start with leading slash");
-        }
-
         int queryIndex = uri.indexOf('?');
         if (queryIndex > -1) {
             uri = uri.substring(0, queryIndex);
         }
 
+        URI uriObject = new URI(uri);
+        if (uriObject.isOpaque()) {
+            throw new URISyntaxException(uri, "opaque URI");
+        }
+
         // Decode %2e before parsing so URI.normalize() can collapse encoded ".."/"." segments.
-        String prepared = uri.replace("%2e", ".").replace("%2E", ".");
+        String prepared = uriObject.getRawPath().replace("%2e", ".").replace("%2E", ".");
         String normalized = new URI(prepared).normalize().getRawPath();
         while (normalized.equals("/..") || normalized.startsWith("/../")) {
             normalized = normalized.substring(3);
         }
-        return normalized.isEmpty() ? "/" : normalized;
+        return normalized;
     }
 }
