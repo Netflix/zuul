@@ -52,13 +52,13 @@ public final class ConnCounter {
     private final Registry registry;
     private final Channel chan;
     private final Id metricBase;
-    private final Map<String, AtomicInteger> counts;
+    private final Map<String, Id> eventToIdLookup;
 
     private ConnCounter(Registry registry, Channel chan, Id metricBase) {
         this.registry = Objects.requireNonNull(registry);
         this.chan = Objects.requireNonNull(chan);
         this.metricBase = Objects.requireNonNull(metricBase);
-        this.counts = new HashMap<>();
+        this.eventToIdLookup = new HashMap<>();
     }
 
     public static ConnCounter install(Channel chan, Registry registry, Id metricBase) {
@@ -66,7 +66,6 @@ public final class ConnCounter {
         if (!chan.attr(CONN_COUNTER).compareAndSet(null, counter)) {
             throw new IllegalStateException("pre-existing counter already present");
         }
-
         return counter;
     }
 
@@ -89,7 +88,7 @@ public final class ConnCounter {
     public void increment(String event, Attrs extraDimensions) {
         Objects.requireNonNull(event);
         Objects.requireNonNull(extraDimensions);
-        if (counts.containsKey(event)) {
+        if (eventToIdLookup.containsKey(event)) {
             // TODO(carl-mastrangelo): make this throw IllegalStateException after verifying this doesn't happen.
             logger.warn("Duplicate conn counter increment {}", event);
             return;
@@ -112,23 +111,37 @@ public final class ConnCounter {
             return counter;
         });
         count.incrementAndGet();
-        counts.put(event, count);
+        eventToIdLookup.put(event, id);
     }
 
     public double getCurrentActiveConns() {
-        AtomicInteger value = counts.get("active");
-        return value == null ? 0.0 : value.doubleValue();
+        Id id = eventToIdLookup.get("active");
+        if (id == null) {
+            return 0.0;
+        }
+
+        AtomicInteger count = PER_EVENT_LOOP_COUNTERS.get().get(id);
+        return count == null ? 0.0 : count.get();
     }
 
     public void decrement(String event) {
         Objects.requireNonNull(event);
-        AtomicInteger value = counts.remove(event);
-        if (value == null) {
-            // TODO(carl-mastrangelo): make this throw IllegalStateException after verifying this doesn't happen.
+        Id tags = eventToIdLookup.get(event);
+
+        if (tags == null) {
             logger.warn("Missing conn counter increment {}", event);
             return;
         }
-        value.decrementAndGet();
+
+        PER_EVENT_LOOP_COUNTERS.get().computeIfPresent(tags, (k, v) -> {
+            int count = v.decrementAndGet();
+            if (count <= 0) {
+                eventToIdLookup.remove(event);
+                return null;
+            } else {
+                return v;
+            }
+        });
     }
 
     @VisibleForTesting
