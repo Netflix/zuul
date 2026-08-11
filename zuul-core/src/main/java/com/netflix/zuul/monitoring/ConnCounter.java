@@ -108,8 +108,7 @@ public final class ConnCounter {
                 .withTags(dimTags);
 
         // PER_EVENT_LOOP_COUNTERS exists to reduce the number of PolledMeters for a given Id to 1 per event loop
-        // instead
-        // of 1 per connection
+        // instead of 1 per connection
         AtomicInteger count = PER_EVENT_LOOP_COUNTERS.get().computeIfAbsent(id, key -> {
             AtomicInteger counter = new AtomicInteger();
             PolledMeter.using(registry).withId(key).monitorValue(counter);
