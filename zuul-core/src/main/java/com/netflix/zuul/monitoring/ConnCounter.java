@@ -16,9 +16,9 @@
 
 package com.netflix.zuul.monitoring;
 
-import com.netflix.spectator.api.Gauge;
 import com.netflix.spectator.api.Id;
 import com.netflix.spectator.api.Registry;
+import com.netflix.spectator.api.patterns.PolledMeter;
 import com.netflix.zuul.Attrs;
 import com.netflix.zuul.netty.server.Server;
 import io.netty.channel.Channel;
@@ -26,50 +26,41 @@ import io.netty.util.AttributeKey;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicInteger;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * A counter for connection stats.  Not thread-safe.
  */
-@SuppressWarnings("ErroneousBitwiseExpression")
+@NullMarked
 public final class ConnCounter {
 
     private static final Logger logger = LoggerFactory.getLogger(ConnCounter.class);
 
-    private static final AttributeKey<ConnCounter> CONN_COUNTER = AttributeKey.newInstance("zuul.conncounter");
-
-    private static final int LOCK_COUNT = 256;
-    private static final int LOCK_MASK = LOCK_COUNT - 1;
+    private static final AttributeKey<@Nullable ConnCounter> CONN_COUNTER =
+            AttributeKey.newInstance("zuul.conncounter");
 
     private static final Attrs EMPTY = Attrs.newInstance();
 
-    /**
-     * An array of locks to guard the gauges.   This is the same as Guava's Striped, but avoids the dep.
-     * <p>
-     * This can be removed after https://github.com/Netflix/spectator/issues/862 is fixed.
-     */
-    private static final Object[] locks = new Object[LOCK_COUNT];
-
-    static {
-        assert (LOCK_COUNT & LOCK_MASK) == 0;
-        for (int i = 0; i < locks.length; i++) {
-            locks[i] = new Object();
-        }
-    }
+    private static final ThreadLocal<Map<Id, AtomicInteger>> PER_EVENT_LOOP_COUNTERS =
+            ThreadLocal.withInitial(HashMap::new);
 
     private final Registry registry;
     private final Channel chan;
     private final Id metricBase;
+    private final Map<String, AtomicInteger> counts;
 
+    @Nullable
     private String lastCountKey;
-
-    private final Map<String, Gauge> counts = new HashMap<>();
 
     private ConnCounter(Registry registry, Channel chan, Id metricBase) {
         this.registry = Objects.requireNonNull(registry);
         this.chan = Objects.requireNonNull(chan);
         this.metricBase = Objects.requireNonNull(metricBase);
+        this.counts = new HashMap<>();
     }
 
     public static ConnCounter install(Channel chan, Registry registry, Id metricBase) {
@@ -115,40 +106,36 @@ public final class ConnCounter {
         Id id = registry.createId(metricBase.name() + '.' + event)
                 .withTags(metricBase.tags())
                 .withTags(dimTags);
-        Gauge gauge = registry.gauge(id);
 
-        synchronized (getLock(id)) {
-            double current = gauge.value();
-            gauge.set(Double.isNaN(current) ? 1 : current + 1);
-        }
-        counts.put(event, gauge);
+        // PER_EVENT_LOOP_COUNTERS exists to reduce the number of PolledMeters for a given Id to 1 per event loop
+        // instead
+        // of 1 per connection
+        AtomicInteger count = PER_EVENT_LOOP_COUNTERS.get().computeIfAbsent(id, key -> {
+            AtomicInteger counter = new AtomicInteger();
+            PolledMeter.using(registry).withId(key).monitorValue(counter);
+            return counter;
+        });
+        count.incrementAndGet();
+        counts.put(event, count);
     }
 
     public double getCurrentActiveConns() {
-        return counts.containsKey("active") ? counts.get("active").value() : 0.0;
+        AtomicInteger value = counts.get("active");
+        return value == null ? 0.0 : value.doubleValue();
     }
 
     public void decrement(String event) {
         Objects.requireNonNull(event);
-        Gauge gauge = counts.remove(event);
-        if (gauge == null) {
+        AtomicInteger value = counts.remove(event);
+        if (value == null) {
             // TODO(carl-mastrangelo): make this throw IllegalStateException after verifying this doesn't happen.
             logger.warn("Missing conn counter increment {}", event);
             return;
         }
-        synchronized (getLock(gauge.id())) {
-            // Noop gauges break this assertion in tests, but the type is package private.   Check to make sure
-            // the gauge has a value, or by implementation cannot have a value.
-            assert !Double.isNaN(gauge.value())
-                    || gauge.getClass().getName().equals("com.netflix.spectator.api.NoopGauge");
-            gauge.set(gauge.value() - 1);
-        }
+        value.decrementAndGet();
     }
 
-    // This is here to pick the correct lock stripe.   This avoids multiple threads synchronizing on the
-    // same lock in the common case.   This can go away once there is an atomic gauge update implemented
-    // in spectator.
-    private static Object getLock(Id id) {
-        return locks[id.hashCode() & LOCK_MASK];
+    static void clearCache() {
+        PER_EVENT_LOOP_COUNTERS.get().clear();
     }
 }

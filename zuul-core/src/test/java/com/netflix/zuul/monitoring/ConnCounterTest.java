@@ -31,6 +31,7 @@ import com.netflix.spectator.api.ManualClock;
 import com.netflix.spectator.api.Measurement;
 import com.netflix.spectator.api.Registry;
 import com.netflix.spectator.api.Timer;
+import com.netflix.spectator.api.patterns.PolledMeter;
 import com.netflix.zuul.Attrs;
 import com.netflix.zuul.netty.server.Server;
 import io.netty.channel.DefaultChannelId;
@@ -38,9 +39,16 @@ import io.netty.channel.embedded.EmbeddedChannel;
 import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 import org.assertj.core.data.Offset;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 class ConnCounterTest {
+
+    @AfterEach
+    void tearDown() {
+        ConnCounter.clearCache();
+    }
+
     @Test
     void record() {
         EmbeddedChannel chan = new EmbeddedChannel();
@@ -53,6 +61,7 @@ class ConnCounterTest {
         counter.increment("middle");
         Attrs.newKey("bar").put(attrs, "baz");
         counter.increment("end");
+        PolledMeter.update(registry);
 
         Gauge meter1 = registry.gauge(registry.createId("foo.start", "from", "nascent"));
         assertThat(meter1).isNotNull();
@@ -84,7 +93,7 @@ class ConnCounterTest {
     }
 
     @Test
-    void decrementReturnsGaugeToZeroAndAllowsReincrement() {
+    void incrementAfterDecrementIsNotDeduped() {
         EmbeddedChannel chan = new EmbeddedChannel();
         chan.attr(Server.CONN_DIMENSIONS).set(Attrs.newInstance());
         Registry registry = new DefaultRegistry();
@@ -92,12 +101,10 @@ class ConnCounterTest {
 
         counter.increment("tls");
         counter.decrement("tls");
-        assertThat(registry.gauge(registry.createId("foo.tls", "from", "nascent"))
-                        .value())
-                .isCloseTo(0.0, Offset.offset(0.0));
 
         // decrement cleared the counts entry, so this is not deduped; "from" now chains off the prior tls event
         counter.increment("tls");
+        PolledMeter.update(registry);
         assertThat(registry.gauge(registry.createId("foo.tls", "from", "tls")).value())
                 .isCloseTo(1.0, Offset.offset(0.0));
     }
@@ -118,9 +125,11 @@ class ConnCounterTest {
         counterA.increment("tls");
         counterB.increment("tls");
         Id tlsId = registry.createId("foo.tls", "from", "nascent");
+        PolledMeter.update(registry);
         assertThat(registry.gauge(tlsId).value()).isCloseTo(2.0, Offset.offset(0.0));
 
         counterA.decrement("tls");
+        PolledMeter.update(registry);
         assertThat(registry.gauge(tlsId).value()).isCloseTo(1.0, Offset.offset(0.0));
     }
 
@@ -179,12 +188,8 @@ class ConnCounterTest {
         assertThat(counter.getCurrentActiveConns()).isCloseTo(0.0, Offset.offset(0.0));
     }
 
-    // Reproduces the negative-connection-count bug. registry.gauge() hands back a SwapGauge; when the
-    // underlying gauge outlives its TTL (as long-lived origin connections do between increment at
-    // handshake and decrement at close) it is evicted by removeExpiredMeters(). The next access
-    // re-resolves a fresh gauge whose value is 0, so decrement subtracts from 0 and reports -1.
     @Test
-    void decrementAfterGaugeExpiryGoesNegative() {
+    void gaugeStaysCorrectWhenConnectionOutlivesMeterTtl() {
         ManualClock clock = new ManualClock();
         long ttlMillis = TimeUnit.MINUTES.toMillis(15);
         ExpiringRegistry registry = new ExpiringRegistry(clock, ttlMillis);
@@ -195,6 +200,7 @@ class ConnCounterTest {
 
         counter.increment("tls");
         Id tlsId = registry.createId("foo.tls", "from", "nascent");
+        PolledMeter.update(registry);
         assertThat(registry.gauge(tlsId).value()).isCloseTo(1.0, Offset.offset(0.0));
 
         // Connection stays open past the meter TTL, then the publish loop evicts the idle gauge.
@@ -202,15 +208,11 @@ class ConnCounterTest {
         registry.removeExpiredMeters();
 
         counter.decrement("tls");
+        PolledMeter.update(registry);
 
-        assertThat(registry.gauge(tlsId).value()).isCloseTo(-1.0, Offset.offset(0.0));
+        assertThat(registry.gauge(tlsId).value()).isCloseTo(0.0, Offset.offset(0.0));
     }
 
-    /**
-     * Minimal registry whose gauges expire after a TTL, mirroring the production AtlasRegistry.
-     * A freshly created gauge starts at 0.0 and {@code set} refreshes the last-updated time, so an
-     * unmodified gauge is dropped once the clock advances past its TTL.
-     */
     private static final class ExpiringRegistry extends AbstractRegistry {
         private final long ttlMillis;
 
