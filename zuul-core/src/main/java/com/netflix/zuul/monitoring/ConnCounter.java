@@ -16,6 +16,7 @@
 
 package com.netflix.zuul.monitoring;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.netflix.spectator.api.Id;
 import com.netflix.spectator.api.Registry;
 import com.netflix.spectator.api.patterns.PolledMeter;
@@ -53,9 +54,6 @@ public final class ConnCounter {
     private final Id metricBase;
     private final Map<String, AtomicInteger> counts;
 
-    @Nullable
-    private String lastCountKey;
-
     private ConnCounter(Registry registry, Channel chan, Id metricBase) {
         this.registry = Objects.requireNonNull(registry);
         this.chan = Objects.requireNonNull(chan);
@@ -68,6 +66,7 @@ public final class ConnCounter {
         if (!chan.attr(CONN_COUNTER).compareAndSet(null, counter)) {
             throw new IllegalStateException("pre-existing counter already present");
         }
+
         return counter;
     }
 
@@ -101,8 +100,6 @@ public final class ConnCounter {
         connDims.forEach((k, v) -> dimTags.put(k.name(), String.valueOf(v)));
         extraDimensions.forEach((k, v) -> dimTags.put(k.name(), String.valueOf(v)));
 
-        dimTags.put("from", lastCountKey != null ? lastCountKey : "nascent");
-        lastCountKey = event;
         Id id = registry.createId(metricBase.name() + '.' + event)
                 .withTags(metricBase.tags())
                 .withTags(dimTags);
@@ -134,6 +131,7 @@ public final class ConnCounter {
         value.decrementAndGet();
     }
 
+    @VisibleForTesting
     static void clearCache() {
         PER_EVENT_LOOP_COUNTERS.get().clear();
     }

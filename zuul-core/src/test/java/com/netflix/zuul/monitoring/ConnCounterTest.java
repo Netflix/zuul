@@ -63,15 +63,15 @@ class ConnCounterTest {
         counter.increment("end");
         PolledMeter.update(registry);
 
-        Gauge meter1 = registry.gauge(registry.createId("foo.start", "from", "nascent"));
+        Gauge meter1 = registry.gauge(registry.createId("foo.start"));
         assertThat(meter1).isNotNull();
         assertThat(meter1.value()).isCloseTo(1.0, Offset.offset(0.0));
 
-        Gauge meter2 = registry.gauge(registry.createId("foo.middle", "from", "start"));
+        Gauge meter2 = registry.gauge(registry.createId("foo.middle"));
         assertThat(meter2).isNotNull();
         assertThat(meter2.value()).isCloseTo(1.0, Offset.offset(0.0));
 
-        Gauge meter3 = registry.gauge(registry.createId("foo.end", "from", "middle", "bar", "baz"));
+        Gauge meter3 = registry.gauge(registry.createId("foo.end", "bar", "baz"));
         assertThat(meter3).isNotNull();
         assertThat(meter3.value()).isCloseTo(1.0, Offset.offset(0.0));
     }
@@ -102,11 +102,10 @@ class ConnCounterTest {
         counter.increment("tls");
         counter.decrement("tls");
 
-        // decrement cleared the counts entry, so this is not deduped; "from" now chains off the prior tls event
+        // decrement cleared the counts entry, so this increment is not deduped
         counter.increment("tls");
         PolledMeter.update(registry);
-        assertThat(registry.gauge(registry.createId("foo.tls", "from", "tls")).value())
-                .isCloseTo(1.0, Offset.offset(0.0));
+        assertThat(registry.gauge(registry.createId("foo.tls")).value()).isCloseTo(1.0, Offset.offset(0.0));
     }
 
     @Test
@@ -124,7 +123,7 @@ class ConnCounterTest {
 
         counterA.increment("tls");
         counterB.increment("tls");
-        Id tlsId = registry.createId("foo.tls", "from", "nascent");
+        Id tlsId = registry.createId("foo.tls");
         PolledMeter.update(registry);
         assertThat(registry.gauge(tlsId).value()).isCloseTo(2.0, Offset.offset(0.0));
 
@@ -173,9 +172,7 @@ class ConnCounterTest {
 
         assertThatCode(() -> counter.decrement("tls")).doesNotThrowAnyException();
         // no gauge was ever touched, so nothing was driven negative
-        assertThat(registry.gauge(registry.createId("foo.tls", "from", "nascent"))
-                        .value())
-                .isNaN();
+        assertThat(registry.gauge(registry.createId("foo.tls")).value()).isNaN();
     }
 
     @Test
@@ -199,7 +196,7 @@ class ConnCounterTest {
         ConnCounter counter = ConnCounter.install(chan, registry, registry.createId("foo"));
 
         counter.increment("tls");
-        Id tlsId = registry.createId("foo.tls", "from", "nascent");
+        Id tlsId = registry.createId("foo.tls");
         PolledMeter.update(registry);
         assertThat(registry.gauge(tlsId).value()).isCloseTo(1.0, Offset.offset(0.0));
 
