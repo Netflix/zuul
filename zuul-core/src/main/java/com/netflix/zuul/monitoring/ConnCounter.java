@@ -46,6 +46,10 @@ public final class ConnCounter {
 
     private static final Attrs EMPTY = Attrs.newInstance();
 
+    /**
+     * PER_EVENT_LOOP_COUNTERS exists to reduce the number of PolledMeters that are created. Any given Id will have a
+     * PolledMeter created for every event loop, with spectator responsible for summing up the values.
+     */
     private static final ThreadLocal<Map<Id, AtomicInteger>> PER_EVENT_LOOP_COUNTERS =
             ThreadLocal.withInitial(HashMap::new);
 
@@ -103,8 +107,6 @@ public final class ConnCounter {
                 .withTags(metricBase.tags())
                 .withTags(dimTags);
 
-        // PER_EVENT_LOOP_COUNTERS exists to reduce the number of PolledMeters for a given Id to 1 per event loop
-        // instead of 1 per connection
         AtomicInteger count = PER_EVENT_LOOP_COUNTERS.get().computeIfAbsent(id, key -> {
             AtomicInteger counter = new AtomicInteger();
             PolledMeter.using(registry).withId(key).monitorValue(counter);
@@ -133,6 +135,8 @@ public final class ConnCounter {
             return;
         }
 
+        // remove the strong reference when the counter hits zero so the gauge can eventually be GC'd. This is so we
+        // don't waste memory around higher cardinality attributes that can be short-lived (like vips)
         PER_EVENT_LOOP_COUNTERS.get().computeIfPresent(id, (k, v) -> v.decrementAndGet() <= 0 ? null : v);
     }
 
