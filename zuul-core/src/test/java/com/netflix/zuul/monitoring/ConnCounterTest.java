@@ -37,12 +37,26 @@ import com.netflix.zuul.netty.server.Server;
 import io.netty.channel.DefaultChannelId;
 import io.netty.channel.embedded.EmbeddedChannel;
 import java.util.Collections;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import org.assertj.core.data.Offset;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class ConnCounterTest {
+
+    private Registry registry;
+    private Attrs connDimensions;
+    private EmbeddedChannel channel;
+
+    @BeforeEach
+    void setUp() {
+        registry = new DefaultRegistry();
+        connDimensions = Attrs.newInstance();
+        channel = new EmbeddedChannel();
+        channel.attr(Server.CONN_DIMENSIONS).set(connDimensions);
+    }
 
     @AfterEach
     void tearDown() {
@@ -51,163 +65,220 @@ class ConnCounterTest {
 
     @Test
     void record() {
-        EmbeddedChannel chan = new EmbeddedChannel();
-        Attrs attrs = Attrs.newInstance();
-        chan.attr(Server.CONN_DIMENSIONS).set(attrs);
-        Registry registry = new DefaultRegistry();
-        ConnCounter counter = ConnCounter.install(chan, registry, registry.createId("foo"));
+        ConnCounter counter = install();
 
         counter.increment("start");
         counter.increment("middle");
-        Attrs.newKey("bar").put(attrs, "baz");
+        Attrs.newKey("bar").put(connDimensions, "baz");
         counter.increment("end");
         PolledMeter.update(registry);
 
-        Gauge meter1 = registry.gauge(registry.createId("foo.start"));
-        assertThat(meter1).isNotNull();
-        assertThat(meter1.value()).isCloseTo(1.0, Offset.offset(0.0));
-
-        Gauge meter2 = registry.gauge(registry.createId("foo.middle"));
-        assertThat(meter2).isNotNull();
-        assertThat(meter2.value()).isCloseTo(1.0, Offset.offset(0.0));
-
-        Gauge meter3 = registry.gauge(registry.createId("foo.end", "bar", "baz"));
-        assertThat(meter3).isNotNull();
-        assertThat(meter3.value()).isCloseTo(1.0, Offset.offset(0.0));
+        assertThat(registry.gauge(registry.createId("foo.start")).value()).isEqualTo(1.0);
+        assertThat(registry.gauge(registry.createId("foo.middle")).value()).isEqualTo(1.0);
+        assertThat(registry.gauge(registry.createId("foo.end", "bar", "baz")).value())
+                .isEqualTo(1.0);
     }
 
     @Test
-    void activeConnsCount() {
-        EmbeddedChannel channel = new EmbeddedChannel();
-        Attrs attrs = Attrs.newInstance();
-        channel.attr(Server.CONN_DIMENSIONS).set(attrs);
-        Registry registry = new DefaultRegistry();
+    void duplicateIncrementIsDeduped() {
+        install();
 
-        ConnCounter.install(channel, registry, registry.createId("foo"));
-
-        // Dedup increments
         ConnCounter.from(channel).increment("active");
         ConnCounter.from(channel).increment("active");
+        PolledMeter.update(registry);
 
-        assertThat(ConnCounter.from(channel).getCurrentActiveConns()).isCloseTo(1.0, Offset.offset(0.0));
+        assertThat(ConnCounter.from(channel).getCurrentActiveConns()).isEqualTo(1.0);
+        assertThat(registry.gauge(registry.createId("foo.active")).value()).isEqualTo(1.0);
+    }
+
+    @Test
+    void incrementMergesExtraDimensionsOverConnDimensions() {
+        Attrs.newKey("proto").put(connDimensions, "h2");
+        Attrs.newKey("cipher").put(connDimensions, "unknown");
+        ConnCounter counter = install();
+
+        Attrs extraDimensions = Attrs.newInstance();
+        Attrs.newKey("cipher").put(extraDimensions, "TLS_AES_128_GCM_SHA256");
+        counter.increment("tls", extraDimensions);
+        PolledMeter.update(registry);
+
+        assertThat(registry.gauge(registry.createId("foo.tls", "proto", "h2", "cipher", "TLS_AES_128_GCM_SHA256"))
+                        .value())
+                .isEqualTo(1.0);
     }
 
     @Test
     void incrementAfterDecrementIsNotDeduped() {
-        EmbeddedChannel chan = new EmbeddedChannel();
-        chan.attr(Server.CONN_DIMENSIONS).set(Attrs.newInstance());
-        Registry registry = new DefaultRegistry();
-        ConnCounter counter = ConnCounter.install(chan, registry, registry.createId("foo"));
+        ConnCounter counter = install();
 
         counter.increment("tls");
         counter.decrement("tls");
-
-        // decrement cleared the counts entry, so this increment is not deduped
         counter.increment("tls");
         PolledMeter.update(registry);
-        assertThat(registry.gauge(registry.createId("foo.tls")).value()).isCloseTo(1.0, Offset.offset(0.0));
+
+        assertThat(registry.gauge(registry.createId("foo.tls")).value()).isEqualTo(1.0);
     }
 
     @Test
     void gaugeIsSharedAcrossChannelsWithMatchingId() {
-        Registry registry = new DefaultRegistry();
-        Id base = registry.createId("foo");
-
-        EmbeddedChannel chanA = new EmbeddedChannel();
-        chanA.attr(Server.CONN_DIMENSIONS).set(Attrs.newInstance());
-        ConnCounter counterA = ConnCounter.install(chanA, registry, base);
-
-        EmbeddedChannel chanB = new EmbeddedChannel();
-        chanB.attr(Server.CONN_DIMENSIONS).set(Attrs.newInstance());
-        ConnCounter counterB = ConnCounter.install(chanB, registry, base);
+        ConnCounter counterA = install();
+        ConnCounter counterB = installOnNewChannel();
 
         counterA.increment("tls");
         counterB.increment("tls");
         Id tlsId = registry.createId("foo.tls");
         PolledMeter.update(registry);
-        assertThat(registry.gauge(tlsId).value()).isCloseTo(2.0, Offset.offset(0.0));
+        assertThat(registry.gauge(tlsId).value()).isEqualTo(2.0);
 
         counterA.decrement("tls");
         PolledMeter.update(registry);
-        assertThat(registry.gauge(tlsId).value()).isCloseTo(1.0, Offset.offset(0.0));
+        assertThat(registry.gauge(tlsId).value()).isEqualTo(1.0);
+    }
+
+    @Test
+    void reincrementIsNotSuppressedWhileAnotherConnectionHoldsTheEvent() {
+        ConnCounter counterA = install();
+        ConnCounter counterB = installOnNewChannel();
+
+        counterA.increment("tls");
+        counterB.increment("tls");
+        counterA.decrement("tls");
+        counterA.increment("tls");
+        PolledMeter.update(registry);
+
+        assertThat(registry.gauge(registry.createId("foo.tls")).value()).isEqualTo(2.0);
+    }
+
+    @Test
+    void doubleDecrementDoesNotConsumeAnotherConnectionsCount() {
+        ConnCounter counterA = install();
+        ConnCounter counterB = installOnNewChannel();
+
+        counterA.increment("tls");
+        counterB.increment("tls");
+        counterA.decrement("tls");
+        counterA.decrement("tls");
+        PolledMeter.update(registry);
+
+        assertThat(registry.gauge(registry.createId("foo.tls")).value()).isEqualTo(1.0);
+    }
+
+    @Test
+    void decrementUsesTheIdCapturedAtIncrementTime() {
+        ConnCounter counter = install();
+
+        counter.increment("active");
+        // callers stamp SELF_CLOSE into the conn dimensions just before decrementing
+        Attrs.newKey("selfclose").put(connDimensions, "true");
+        counter.decrement("active");
+        PolledMeter.update(registry);
+
+        assertThat(registry.gauge(registry.createId("foo.active")).value()).isEqualTo(0.0);
+        assertThat(registry.get(registry.createId("foo.active", "selfclose", "true")))
+                .isNull();
+    }
+
+    @Test
+    void countsFromDifferentEventLoopsSumIntoOneGauge() throws Exception {
+        ExecutorService loopA = Executors.newSingleThreadExecutor();
+        ExecutorService loopB = Executors.newSingleThreadExecutor();
+
+        try {
+            loopA.submit(() -> installOnNewChannel().increment("tls")).get(5, TimeUnit.SECONDS);
+            loopB.submit(() -> installOnNewChannel().increment("tls")).get(5, TimeUnit.SECONDS);
+            PolledMeter.update(registry);
+
+            assertThat(registry.gauge(registry.createId("foo.tls")).value()).isEqualTo(2.0);
+        } finally {
+            clearCacheAndShutdown(loopA);
+            clearCacheAndShutdown(loopB);
+        }
     }
 
     @Test
     void fromResolvesToParentChannelCounter() {
-        EmbeddedChannel parent = new EmbeddedChannel();
-        parent.attr(Server.CONN_DIMENSIONS).set(Attrs.newInstance());
-        Registry registry = new DefaultRegistry();
-        ConnCounter parentCounter = ConnCounter.install(parent, registry, registry.createId("foo"));
+        ConnCounter parentCounter = install();
 
-        EmbeddedChannel child = new EmbeddedChannel(parent, DefaultChannelId.newInstance(), false, false);
+        EmbeddedChannel child = new EmbeddedChannel(channel, DefaultChannelId.newInstance(), false, false);
 
         assertThat(ConnCounter.from(child)).isSameAs(parentCounter);
     }
 
     @Test
     void installThrowsWhenCounterAlreadyPresent() {
-        EmbeddedChannel chan = new EmbeddedChannel();
-        chan.attr(Server.CONN_DIMENSIONS).set(Attrs.newInstance());
-        Registry registry = new DefaultRegistry();
-        ConnCounter.install(chan, registry, registry.createId("foo"));
+        install();
 
-        assertThatThrownBy(() -> ConnCounter.install(chan, registry, registry.createId("foo")))
+        assertThatThrownBy(this::install)
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("pre-existing counter");
     }
 
     @Test
     void fromThrowsWhenNoCounterInstalled() {
-        assertThatThrownBy(() -> ConnCounter.from(new EmbeddedChannel()))
+        assertThatThrownBy(() -> ConnCounter.from(channel))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("no counter on channel");
     }
 
     @Test
     void decrementOfUnseenEventIsNoOp() {
-        EmbeddedChannel chan = new EmbeddedChannel();
-        chan.attr(Server.CONN_DIMENSIONS).set(Attrs.newInstance());
-        Registry registry = new DefaultRegistry();
-        ConnCounter counter = ConnCounter.install(chan, registry, registry.createId("foo"));
+        ConnCounter counter = install();
 
         assertThatCode(() -> counter.decrement("tls")).doesNotThrowAnyException();
-        // no gauge was ever touched, so nothing was driven negative
-        assertThat(registry.gauge(registry.createId("foo.tls")).value()).isNaN();
+        assertThat(registry.stream()).isEmpty();
     }
 
     @Test
     void getCurrentActiveConnsIsZeroWhenNeverIncremented() {
-        EmbeddedChannel chan = new EmbeddedChannel();
-        chan.attr(Server.CONN_DIMENSIONS).set(Attrs.newInstance());
-        Registry registry = new DefaultRegistry();
-        ConnCounter counter = ConnCounter.install(chan, registry, registry.createId("foo"));
-
-        assertThat(counter.getCurrentActiveConns()).isCloseTo(0.0, Offset.offset(0.0));
+        assertThat(install().getCurrentActiveConns()).isEqualTo(0.0);
     }
 
     @Test
     void gaugeStaysCorrectWhenConnectionOutlivesMeterTtl() {
         ManualClock clock = new ManualClock();
         long ttlMillis = TimeUnit.MINUTES.toMillis(15);
-        ExpiringRegistry registry = new ExpiringRegistry(clock, ttlMillis);
-
-        EmbeddedChannel chan = new EmbeddedChannel();
-        chan.attr(Server.CONN_DIMENSIONS).set(Attrs.newInstance());
-        ConnCounter counter = ConnCounter.install(chan, registry, registry.createId("foo"));
+        ExpiringRegistry expiringRegistry = new ExpiringRegistry(clock, ttlMillis);
+        ConnCounter counter = ConnCounter.install(channel, expiringRegistry, expiringRegistry.createId("foo"));
 
         counter.increment("tls");
-        Id tlsId = registry.createId("foo.tls");
-        PolledMeter.update(registry);
-        assertThat(registry.gauge(tlsId).value()).isCloseTo(1.0, Offset.offset(0.0));
+        PolledMeter.update(expiringRegistry);
+
+        // PolledMeter keeps writing to the Gauge it captured at registration, so hold that instance - once the
+        // registry evicts it, expiringRegistry.gauge(...) mints a fresh one whose value defaults to 0.0.
+        Gauge polled = expiringRegistry.gauge(expiringRegistry.createId("foo.tls"));
+        assertThat(polled.value()).isEqualTo(1.0);
 
         // Connection stays open past the meter TTL, then the publish loop evicts the idle gauge.
         clock.setWallTime(ttlMillis + 1);
-        registry.removeExpiredMeters();
+        expiringRegistry.removeExpiredMeters();
 
         counter.decrement("tls");
-        PolledMeter.update(registry);
+        PolledMeter.update(expiringRegistry);
 
-        assertThat(registry.gauge(tlsId).value()).isCloseTo(0.0, Offset.offset(0.0));
+        assertThat(polled.value()).isEqualTo(0.0);
+    }
+
+    private ConnCounter install() {
+        return ConnCounter.install(channel, registry, registry.createId("foo"));
+    }
+
+    /**
+     * Installs a counter on a second connection sharing the registry, for tests that need two channels.
+     */
+    private ConnCounter installOnNewChannel() {
+        EmbeddedChannel chan = new EmbeddedChannel();
+        chan.attr(Server.CONN_DIMENSIONS).set(Attrs.newInstance());
+        return ConnCounter.install(chan, registry, registry.createId("foo"));
+    }
+
+    /**
+     * Clears the thread-local counts on the given loop before shutting it down, so no count leaks into
+     * subsequent tests.  {@link ConnCounter#clearCache()} only clears the calling thread's map.
+     */
+    private static void clearCacheAndShutdown(ExecutorService loop) throws Exception {
+        loop.submit(ConnCounter::clearCache).get(5, TimeUnit.SECONDS);
+        loop.shutdown();
+        assertThat(loop.awaitTermination(5, TimeUnit.SECONDS)).isTrue();
     }
 
     private static final class ExpiringRegistry extends AbstractRegistry {

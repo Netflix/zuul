@@ -126,22 +126,14 @@ public final class ConnCounter {
 
     public void decrement(String event) {
         Objects.requireNonNull(event);
-        Id tags = eventToIdLookup.get(event);
+        Id id = eventToIdLookup.remove(event);
 
-        if (tags == null) {
+        if (id == null) {
             logger.warn("Missing conn counter increment {}", event);
             return;
         }
 
-        PER_EVENT_LOOP_COUNTERS.get().computeIfPresent(tags, (k, v) -> {
-            int count = v.decrementAndGet();
-            if (count <= 0) {
-                eventToIdLookup.remove(event);
-                return null;
-            } else {
-                return v;
-            }
-        });
+        PER_EVENT_LOOP_COUNTERS.get().computeIfPresent(id, (k, v) -> v.decrementAndGet() <= 0 ? null : v);
     }
 
     @VisibleForTesting
