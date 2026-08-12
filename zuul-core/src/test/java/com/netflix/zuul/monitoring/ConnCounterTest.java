@@ -271,10 +271,6 @@ class ConnCounterTest {
         return ConnCounter.install(chan, registry, registry.createId("foo"));
     }
 
-    /**
-     * Clears the thread-local counts on the given loop before shutting it down, so no count leaks into
-     * subsequent tests.  {@link ConnCounter#clearCache()} only clears the calling thread's map.
-     */
     private static void clearCacheAndShutdown(ExecutorService loop) throws Exception {
         loop.submit(ConnCounter::clearCache).get(5, TimeUnit.SECONDS);
         loop.shutdown();
