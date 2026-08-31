@@ -46,6 +46,12 @@ import lombok.NonNull;
 public final class Headers {
     private static final int ABSENT = -1;
 
+    /**
+     * A partial list of headers to collapse. Derived from <a href="https://github.com/envoyproxy/envoy/blob/32041077fdaf7b8396f5ed95e63812a53619ed61/envoy/http/header_map.h#L180-L267">envoy's inline headers</a>.
+     */
+    private static final Set<String> COLLAPSE_HEADER_NAMES =
+            Set.of("content-type", "host", "content-length", "user-agent", "upgrade", "expect", "grpc-timeout");
+
     private final List<String> originalNames;
     private final List<String> names;
     private final List<String> values;
@@ -498,15 +504,15 @@ public final class Headers {
     }
 
     /**
-     * Collapses every header that appears more than once to a single entry holding its last value,
-     * matching the last-write-wins rule of set(...).
+     * Collapses each {@link #COLLAPSE_HEADER_NAMES} entry that appears more than once to a single entry
+     * holding its last value, matching the last-write-wins rule of set(...).
      *
      * @return true if any header was collapsed
      */
     public boolean collapseMultiValuedHeaders() {
         int distinct = 0;
         for (int i = 0; i < size(); i++) {
-            int seen = findNormal(name(i), distinct);
+            int seen = COLLAPSE_HEADER_NAMES.contains(name(i)) ? findNormal(name(i), distinct) : ABSENT;
             if (seen == ABSENT) {
                 originalName(distinct, originalName(i));
                 name(distinct, name(i));
