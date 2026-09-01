@@ -30,6 +30,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 /**
  * Tests for {@link Headers}.
@@ -933,23 +935,23 @@ class HeadersTest {
     @Test
     void collapseMultiValuedHeaders_keepsLastValueForDuplicatePair() {
         Headers headers = new Headers();
-        headers.add("X-Test", "first");
-        headers.add("X-Test", "second");
+        headers.add("Content-Type", "first");
+        headers.add("Content-Type", "second");
 
         assertThat(headers.collapseMultiValuedHeaders()).isTrue();
-        assertThat(headers.getAll("X-Test")).containsExactly("second");
+        assertThat(headers.getAll("Content-Type")).containsExactly("second");
         assertThat(headers.size()).isEqualTo(1);
     }
 
     @Test
     void collapseMultiValuedHeaders_keepsLastValueForTriplicate() {
         Headers headers = new Headers();
-        headers.add("X-Test", "a");
-        headers.add("X-Test", "b");
-        headers.add("X-Test", "c");
+        headers.add("Content-Type", "a");
+        headers.add("Content-Type", "b");
+        headers.add("Content-Type", "c");
 
         assertThat(headers.collapseMultiValuedHeaders()).isTrue();
-        assertThat(headers.getAll("X-Test")).containsExactly("c");
+        assertThat(headers.getAll("Content-Type")).containsExactly("c");
     }
 
     @Test
@@ -978,14 +980,14 @@ class HeadersTest {
     @Test
     void collapseMultiValuedHeaders_collapsesEachDuplicatedName() {
         Headers headers = new Headers();
-        headers.add("X-Test", "a");
-        headers.add("X-Other", "1");
-        headers.add("X-Test", "b");
-        headers.add("X-Other", "2");
+        headers.add("Content-Type", "a");
+        headers.add("User-Agent", "1");
+        headers.add("Content-Type", "b");
+        headers.add("User-Agent", "2");
 
         assertThat(headers.collapseMultiValuedHeaders()).isTrue();
-        assertThat(headers.getAll("X-Test")).containsExactly("b");
-        assertThat(headers.getAll("X-Other")).containsExactly("2");
+        assertThat(headers.getAll("Content-Type")).containsExactly("b");
+        assertThat(headers.getAll("User-Agent")).containsExactly("2");
         assertThat(headers.size()).isEqualTo(2);
     }
 
@@ -993,13 +995,13 @@ class HeadersTest {
     void collapseMultiValuedHeaders_leavesSingleValuedHeadersUntouched() {
         Headers headers = new Headers();
         headers.add("Via", "duct");
-        headers.add("X-Test", "a");
-        headers.add("X-Test", "b");
+        headers.add("Content-Type", "a");
+        headers.add("Content-Type", "b");
         headers.add("Host", "example.com");
 
         assertThat(headers.collapseMultiValuedHeaders()).isTrue();
         assertThat(headers.getAll("Via")).containsExactly("duct");
-        assertThat(headers.getAll("X-Test")).containsExactly("b");
+        assertThat(headers.getAll("Content-Type")).containsExactly("b");
         assertThat(headers.getAll("Host")).containsExactly("example.com");
         assertThat(headers.size()).isEqualTo(3);
     }
@@ -1007,10 +1009,10 @@ class HeadersTest {
     @Test
     void collapseMultiValuedHeaders_preservesFirstAppearanceOrder() {
         Headers headers = new Headers();
-        headers.add("A", "1");
-        headers.add("B", "1");
-        headers.add("A", "2");
-        headers.add("C", "1");
+        headers.add("Content-Type", "1");
+        headers.add("Host", "1");
+        headers.add("Content-Type", "2");
+        headers.add("User-Agent", "1");
 
         headers.collapseMultiValuedHeaders();
 
@@ -1019,9 +1021,9 @@ class HeadersTest {
                 result.computeIfAbsent(k, discard -> new ArrayList<>()).add(v));
         assertThat(result)
                 .containsExactly(
-                        entry("A", Collections.singletonList("2")),
-                        entry("B", Collections.singletonList("1")),
-                        entry("C", Collections.singletonList("1")));
+                        entry("Content-Type", Collections.singletonList("2")),
+                        entry("Host", Collections.singletonList("1")),
+                        entry("User-Agent", Collections.singletonList("1")));
     }
 
     @Test
@@ -1041,37 +1043,37 @@ class HeadersTest {
     @Test
     void collapseMultiValuedHeaders_getFirstReturnsLastValueAfterCollapse() {
         Headers headers = new Headers();
-        headers.add("X-Test", "first");
-        headers.add("X-Test", "second");
+        headers.add("Content-Type", "first");
+        headers.add("Content-Type", "second");
 
         headers.collapseMultiValuedHeaders();
 
-        assertThat(headers.getFirst("X-Test")).isEqualTo("second");
+        assertThat(headers.getFirst("Content-Type")).isEqualTo("second");
     }
 
     @Test
     void collapseMultiValuedHeaders_isIdempotent() {
         Headers headers = new Headers();
-        headers.add("X-Test", "a");
-        headers.add("X-Test", "b");
+        headers.add("Content-Type", "a");
+        headers.add("Content-Type", "b");
 
         assertThat(headers.collapseMultiValuedHeaders()).isTrue();
         assertThat(headers.collapseMultiValuedHeaders()).isFalse();
-        assertThat(headers.getAll("X-Test")).containsExactly("b");
+        assertThat(headers.getAll("Content-Type")).containsExactly("b");
         assertThat(headers.size()).isEqualTo(1);
     }
 
     @Test
     void collapseMultiValuedHeaders_remainsUsableAfterCollapse() {
         Headers headers = new Headers();
-        headers.add("X-Test", "a");
-        headers.add("X-Test", "b");
+        headers.add("Content-Type", "a");
+        headers.add("Content-Type", "b");
 
         headers.collapseMultiValuedHeaders();
-        headers.add("X-Test", "c");
+        headers.add("Content-Type", "c");
         headers.add("Via", "duct");
 
-        assertThat(headers.getAll("X-Test")).containsExactly("b", "c");
+        assertThat(headers.getAll("Content-Type")).containsExactly("b", "c");
         assertThat(headers.getAll("Via")).containsExactly("duct");
         assertThat(headers.size()).isEqualTo(3);
     }
@@ -1079,17 +1081,60 @@ class HeadersTest {
     @Test
     void collapseMultiValuedHeaders_collapsesThreeDistinctDuplicatedNames() {
         Headers headers = new Headers();
-        headers.add("A", "a1");
-        headers.add("B", "b1");
-        headers.add("C", "c1");
-        headers.add("A", "a2");
-        headers.add("B", "b2");
-        headers.add("C", "c2");
+        headers.add("Content-Type", "a1");
+        headers.add("Host", "b1");
+        headers.add("User-Agent", "c1");
+        headers.add("Content-Type", "a2");
+        headers.add("Host", "b2");
+        headers.add("User-Agent", "c2");
 
         assertThat(headers.collapseMultiValuedHeaders()).isTrue();
         assertThat(headers.size()).isEqualTo(3);
-        assertThat(headers.getAll("A")).containsExactly("a2");
-        assertThat(headers.getAll("B")).containsExactly("b2");
-        assertThat(headers.getAll("C")).containsExactly("c2");
+        assertThat(headers.getAll("Content-Type")).containsExactly("a2");
+        assertThat(headers.getAll("Host")).containsExactly("b2");
+        assertThat(headers.getAll("User-Agent")).containsExactly("c2");
+    }
+
+    @Test
+    void collapseMultiValuedHeaders_leavesHeadersOutsideTheCollapseSetAlone() {
+        Headers headers = new Headers();
+        headers.add("Sec-WebSocket-Protocol", "chat");
+        headers.add("Sec-WebSocket-Protocol", "superchat");
+        headers.add("Accept", "text/html");
+        headers.add("Accept", "application/json");
+        headers.add("Set-Cookie", "a=1");
+        headers.add("Set-Cookie", "b=2");
+
+        assertThat(headers.collapseMultiValuedHeaders()).isFalse();
+        assertThat(headers.getAll("Sec-WebSocket-Protocol")).containsExactly("chat", "superchat");
+        assertThat(headers.getAll("Accept")).containsExactly("text/html", "application/json");
+        assertThat(headers.getAll("Set-Cookie")).containsExactly("a=1", "b=2");
+        assertThat(headers.size()).isEqualTo(6);
+    }
+
+    @Test
+    void collapseMultiValuedHeaders_collapsesOnlyTheListedNamesWhenMixed() {
+        Headers headers = new Headers();
+        headers.add("Accept", "text/html");
+        headers.add("Content-Type", "text/plain");
+        headers.add("Accept", "application/json");
+        headers.add("Content-Type", "application/json");
+
+        assertThat(headers.collapseMultiValuedHeaders()).isTrue();
+        assertThat(headers.getAll("Accept")).containsExactly("text/html", "application/json");
+        assertThat(headers.getAll("Content-Type")).containsExactly("application/json");
+        assertThat(headers.size()).isEqualTo(3);
+    }
+
+    @ParameterizedTest
+    @ValueSource(
+            strings = {"Content-Type", "Host", "Content-Length", "User-Agent", "Upgrade", "Expect", "Grpc-Timeout"})
+    void collapseMultiValuedHeaders_collapsesEveryHeaderEnvoyCoalescesIntoAnInvalidValue(String headerName) {
+        Headers headers = new Headers();
+        headers.add(headerName, "first");
+        headers.add(headerName, "second");
+
+        assertThat(headers.collapseMultiValuedHeaders()).isTrue();
+        assertThat(headers.getAll(headerName)).containsExactly("second");
     }
 }
