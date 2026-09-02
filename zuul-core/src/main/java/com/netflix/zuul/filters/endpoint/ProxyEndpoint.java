@@ -360,7 +360,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
             if (chunk instanceof LastHttpContent && !receivedChunkAfterProxyStarted) {
                 // if everything except the LastHttpContent was buffered, then buffer the last chunk so this request
                 // is considered replayable
-                zuulReq.bufferBodyContents(chunk.retain());
+                zuulReq.bufferBodyContents(chunk.retainedDuplicate());
             }
 
             // Connected to origin, stream request body without buffering
