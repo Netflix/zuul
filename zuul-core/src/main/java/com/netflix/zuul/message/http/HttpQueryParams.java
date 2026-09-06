@@ -26,7 +26,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -113,7 +112,7 @@ public class HttpQueryParams implements Cloneable {
     }
 
     public List<String> get(String name) {
-        return delegate.get(name.toLowerCase(Locale.ROOT));
+        return delegate.get(name);
     }
 
     public boolean contains(String name) {
@@ -129,7 +128,15 @@ public class HttpQueryParams implements Cloneable {
      * However, as a utility, this exists to allow us to do a case insensitive match on demand.
      */
     public boolean containsIgnoreCase(String name) {
-        return delegate.containsKey(name) || delegate.containsKey(name.toLowerCase(Locale.ROOT));
+        if (delegate.containsKey(name)) {
+            return true;
+        }
+        for (String key : delegate.keySet()) {
+            if (key.equalsIgnoreCase(name)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
