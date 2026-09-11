@@ -20,7 +20,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.netflix.client.config.CommonClientConfigKey;
 import com.netflix.config.ConfigurationManager;
+import com.netflix.spectator.api.Registry;
 import com.netflix.zuul.integration.server.Bootstrap;
+import com.netflix.zuul.origins.BasicNettyOriginManager;
+import com.netflix.zuul.origins.OriginManager;
 import io.netty.channel.group.ChannelGroup;
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -28,6 +31,7 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Function;
 import org.apache.commons.configuration.AbstractConfiguration;
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
@@ -43,6 +47,7 @@ public class ZuulServerExtension implements AfterAllCallback, BeforeAllCallback 
 
     private final int eventLoopThreads;
     private final Duration originReadTimeout;
+    private final Function<Registry, OriginManager<?>> originManagerFactory;
 
     private Bootstrap bootstrap;
     private int serverPort;
@@ -51,6 +56,7 @@ public class ZuulServerExtension implements AfterAllCallback, BeforeAllCallback 
     private ZuulServerExtension(Builder builder) {
         this.eventLoopThreads = builder.eventLoopThreads;
         this.originReadTimeout = builder.originReadTimeout;
+        this.originManagerFactory = builder.originManagerFactory;
     }
 
     @Override
@@ -70,7 +76,7 @@ public class ZuulServerExtension implements AfterAllCallback, BeforeAllCallback 
 
         // short circuit graceful shutdown
         config.setProperty("server.outofservice.close.timeout", "0");
-        bootstrap = new Bootstrap();
+        bootstrap = new Bootstrap(originManagerFactory);
         bootstrap.start();
         assertThat(bootstrap.isRunning()).isTrue();
     }
@@ -128,6 +134,7 @@ public class ZuulServerExtension implements AfterAllCallback, BeforeAllCallback 
     public static class Builder {
         private int eventLoopThreads = 1;
         private Duration originReadTimeout;
+        private Function<Registry, OriginManager<?>> originManagerFactory = BasicNettyOriginManager::new;
 
         public Builder withEventLoopThreads(int eventLoopThreads) {
             this.eventLoopThreads = eventLoopThreads;
@@ -139,8 +146,14 @@ public class ZuulServerExtension implements AfterAllCallback, BeforeAllCallback 
             return this;
         }
 
+        public Builder withOriginManagerFactory(Function<Registry, OriginManager<?>> originManagerFactory) {
+            this.originManagerFactory = originManagerFactory;
+            return this;
+        }
+
         public ZuulServerExtension build() {
             Objects.requireNonNull(originReadTimeout, "originReadTimeout cannot be null");
+            Objects.requireNonNull(originManagerFactory, "originManagerFactory cannot be null");
             return new ZuulServerExtension(this);
         }
     }

@@ -52,6 +52,7 @@ import com.netflix.zuul.passport.CurrentPassport;
 import com.netflix.zuul.passport.PassportItem;
 import com.netflix.zuul.passport.PassportState;
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.embedded.EmbeddedChannel;
@@ -186,12 +187,18 @@ class ProxyEndpointTest {
         attempt2.finishAndReleaseAll();
     }
 
+    /**
+     * Drains everything the origin channel was handed, advancing each content chunk's reader index the way a
+     * socket write does.
+     */
     private static void consumeAndRelease(EmbeddedChannel channel) {
-        HttpContent chunk;
-        while ((chunk = channel.readOutbound()) != null) {
-            ByteBuf content = chunk.content();
-            content.skipBytes(content.readableBytes());
-            chunk.release();
+        Object msg;
+        while ((msg = channel.readOutbound()) != null) {
+            if (msg instanceof HttpContent chunk) {
+                ByteBuf content = chunk.content();
+                content.skipBytes(content.readableBytes());
+            }
+            ReferenceCountUtil.release(msg);
         }
     }
 
@@ -294,8 +301,11 @@ class ProxyEndpointTest {
         assertThat(proxyEndpoint.isRetryable(OutboundErrorType.CONNECT_ERROR)).isTrue();
     }
 
-    @Test
-    public void lastContentAfterProxyStartedIsConsideredReplayable() {
+    /**
+     * Rebuilds the endpoint against an already-connected pooled origin, so content chunks stream straight through
+     * to {@link #channel} instead of being buffered while the connect promise is outstanding.
+     */
+    private void proxyToConnectedOrigin() {
         Promise<PooledConnection> promise = channel.eventLoop().newPromise();
 
         PooledConnection pooledConnection = Mockito.mock(PooledConnection.class);
@@ -325,6 +335,12 @@ class ProxyEndpointTest {
                 .addLast(DefaultOriginChannelInitializer.CONNECTION_POOL_HANDLER, new ChannelInboundHandlerAdapter());
 
         proxyEndpoint.apply(request);
+    }
+
+    @Test
+    void lastContentAfterProxyStartedIsConsideredReplayable() {
+        proxyToConnectedOrigin();
+
         LastHttpContent lastContent = new DefaultLastHttpContent();
         assertThat(proxyEndpoint.isRequestReplayable()).isFalse();
         proxyEndpoint.processContentChunk(request, lastContent);
@@ -335,6 +351,25 @@ class ProxyEndpointTest {
                 .as("ref count should be 1 in case a retry is needed")
                 .isEqualTo(1);
         ReferenceCountUtil.safeRelease(lastContent);
+    }
+
+    @Test
+    void lastContentBufferedAfterProxyStartedSurvivesTheWriteToTheOrigin() {
+        proxyToConnectedOrigin();
+
+        proxyEndpoint.processContentChunk(
+                request, new DefaultLastHttpContent(Unpooled.copiedBuffer("Hello There", UTF_8)));
+        consumeAndRelease(channel);
+
+        EmbeddedChannel retry = new EmbeddedChannel();
+        proxyEndpoint.writeBufferedBodyContent(request, retry);
+        retry.flush();
+
+        assertThat(readContentAndRelease(retry)).isEqualTo("Hello There");
+
+        request.disposeBufferedBody();
+        retry.finishAndReleaseAll();
+        channel.finishAndReleaseAll();
     }
 
     @Test

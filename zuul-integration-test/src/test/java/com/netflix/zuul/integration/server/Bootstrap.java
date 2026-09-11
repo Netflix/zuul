@@ -38,11 +38,13 @@ import com.netflix.zuul.netty.server.ClientRequestReceiver;
 import com.netflix.zuul.netty.server.DirectMemoryMonitor;
 import com.netflix.zuul.netty.server.Server;
 import com.netflix.zuul.origins.BasicNettyOriginManager;
+import com.netflix.zuul.origins.OriginManager;
 import io.netty.channel.group.ChannelGroup;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -66,6 +68,15 @@ public class Bootstrap {
 
     private Server server;
     private ServerStartup serverStartup;
+    private final Function<Registry, OriginManager<?>> originManagerFactory;
+
+    public Bootstrap() {
+        this(BasicNettyOriginManager::new);
+    }
+
+    public Bootstrap(Function<Registry, OriginManager<?>> originManagerFactory) {
+        this.originManagerFactory = originManagerFactory;
+    }
 
     public void start() {
         long startNanos = System.nanoTime();
@@ -80,7 +91,7 @@ public class Bootstrap {
             serverStartup = new ServerStartup(
                     new NoOpServerStatusManager(),
                     new StaticFilterLoader(new DefaultFilterFactory(), FILTER_TYPES),
-                    new ZuulSessionContextDecorator(new BasicNettyOriginManager(registry)),
+                    new ZuulSessionContextDecorator(originManagerFactory.apply(registry)),
                     (f, s) -> {},
                     new BasicRequestCompleteHandler(),
                     registry,
