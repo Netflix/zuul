@@ -16,6 +16,7 @@
 package com.netflix.zuul.util;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.netflix.zuul.message.Headers;
 import com.netflix.zuul.message.ZuulMessage;
@@ -27,6 +28,7 @@ import io.netty.handler.codec.http.HttpHeaderValues;
 import io.netty.handler.codec.http2.Http2StreamChannel;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import org.jspecify.annotations.NullMarked;
@@ -99,8 +101,40 @@ public class HttpUtils {
     }
 
     public static boolean acceptsGzip(Headers headers) {
-        String ae = headers.getFirst(HttpHeaderNames.ACCEPT_ENCODING);
-        return ae != null && ae.contains(HttpHeaderValues.GZIP.toString());
+        String acceptEncoding = headers.getFirst(HttpHeaderNames.ACCEPT_ENCODING);
+        if (acceptEncoding == null) {
+            return false;
+        }
+
+        for (String encoding : Splitter.on(',').trimResults().split(acceptEncoding)) {
+            List<String> parts = Splitter.on(';').trimResults().splitToList(encoding);
+
+            if (!parts.get(0).equals(HttpHeaderValues.GZIP.toString())) {
+                continue;
+            }
+
+            double quality = 1.0;
+
+            for (int i = 1; i < parts.size(); i++) {
+                String parameter = parts.get(i);
+                int separator = parameter.indexOf('=');
+
+                if (separator > 0 && parameter.substring(0, separator).trim().equalsIgnoreCase("q")) {
+                    try {
+                        quality = Double.parseDouble(
+                                parameter.substring(separator + 1).trim());
+                    } catch (NumberFormatException e) {
+                        quality = 0.0;
+                    }
+                }
+            }
+
+            if (quality > 0.0) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
