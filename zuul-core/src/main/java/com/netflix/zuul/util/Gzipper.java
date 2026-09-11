@@ -51,7 +51,7 @@ public class Gzipper {
         if (bb.hasArray()) {
             /* avoid memory copy if possible */
             bytes = bb.array();
-            offset = bb.arrayOffset();
+            offset = bb.arrayOffset() + bb.readerIndex();
         } else {
             bytes = new byte[length];
             bb.getBytes(bb.readerIndex(), bytes);
