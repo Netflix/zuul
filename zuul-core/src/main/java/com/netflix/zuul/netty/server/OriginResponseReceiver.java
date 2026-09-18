@@ -25,6 +25,7 @@ import com.netflix.zuul.filters.endpoint.ProxyEndpoint;
 import com.netflix.zuul.message.http.HttpQueryParams;
 import com.netflix.zuul.message.http.HttpRequestMessage;
 import com.netflix.zuul.netty.ChannelUtils;
+import com.netflix.zuul.netty.ZuulToNettyHttpHeaders;
 import com.netflix.zuul.netty.connectionpool.OriginConnectException;
 import com.netflix.zuul.passport.PassportState;
 import io.netty.channel.ChannelDuplexHandler;
@@ -178,12 +179,11 @@ public class OriginResponseReceiver extends ChannelDuplexHandler {
 
         customRequestProcessing(zuulRequest);
 
-        DefaultHttpRequest nettyReq =
-                new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.valueOf(method), uri, false);
-        // Copy headers across.
-        zuulRequest.getHeaders().forEach((name, value) -> nettyReq.headers().add(name, value));
+        ZuulToNettyHttpHeaders nettyHeaders =
+                new ZuulToNettyHttpHeaders(zuulRequest.getHeaders().size());
+        zuulRequest.getHeaders().forEach(nettyHeaders::add);
 
-        return nettyReq;
+        return new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.valueOf(method), uri, nettyHeaders);
     }
 
     /**

@@ -27,6 +27,7 @@ import com.netflix.zuul.filters.endpoint.ProxyEndpoint;
 import com.netflix.zuul.message.Headers;
 import com.netflix.zuul.message.http.HttpRequestMessage;
 import com.netflix.zuul.message.util.HttpRequestBuilder;
+import com.netflix.zuul.netty.ZuulToNettyHttpHeaders;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -190,6 +191,7 @@ class OriginResponseReceiverTest {
 
         HttpRequest nettyRequest = outboundChannel.readOutbound();
         assertThat(nettyRequest).isNotNull();
+        assertThat(nettyRequest.headers()).isInstanceOf(ZuulToNettyHttpHeaders.class);
 
         // original (non-normalised) case is preserved
         assertThat(nettyRequest.headers().names()).contains("X-Custom-Header");
