@@ -31,6 +31,7 @@ import com.netflix.zuul.message.http.HttpRequestInfo;
 import com.netflix.zuul.message.http.HttpRequestMessage;
 import com.netflix.zuul.message.http.HttpResponseMessage;
 import com.netflix.zuul.netty.ChannelUtils;
+import com.netflix.zuul.netty.ZuulToNettyHttpHeaders;
 import com.netflix.zuul.stats.status.StatusCategory;
 import com.netflix.zuul.stats.status.StatusCategoryUtils;
 import com.netflix.zuul.stats.status.ZuulStatusCategory;
@@ -43,7 +44,6 @@ import io.netty.handler.codec.http.DefaultHttpResponse;
 import io.netty.handler.codec.http.HttpContent;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpHeaderValues;
-import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
@@ -179,13 +179,11 @@ public class ClientResponseWriter extends ChannelInboundHandlerAdapter {
             responseHttpVersion = HttpVersion.HTTP_1_1;
         }
 
-        // Create the main http response to send, with body.
+        ZuulToNettyHttpHeaders nativeHeaders =
+                new ZuulToNettyHttpHeaders(zuulResp.getHeaders().size() + 2 /* framing and protocol headers */);
+        zuulResp.getHeaders().forEach(nativeHeaders::add);
         DefaultHttpResponse nativeResponse = new DefaultHttpResponse(
-                responseHttpVersion, HttpResponseStatus.valueOf(zuulResp.getStatus()), false, false);
-
-        // Now set all of the response headers - note this is a multi-set in keeping with HTTP semantics
-        HttpHeaders nativeHeaders = nativeResponse.headers();
-        zuulResp.getHeaders().forEach((name, value) -> nativeHeaders.add(name, value));
+                responseHttpVersion, HttpResponseStatus.valueOf(zuulResp.getStatus()), nativeHeaders);
 
         // Netty does not automatically add Content-Length or Transfer-Encoding: chunked. So we add here if missing.
         if (!HttpUtil.isContentLengthSet(nativeResponse) && !HttpUtil.isTransferEncodingChunked(nativeResponse)) {

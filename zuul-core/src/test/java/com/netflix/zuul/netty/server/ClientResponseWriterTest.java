@@ -30,6 +30,7 @@ import com.netflix.zuul.message.http.HttpRequestMessage;
 import com.netflix.zuul.message.http.HttpResponseMessage;
 import com.netflix.zuul.message.http.HttpResponseMessageImpl;
 import com.netflix.zuul.message.util.HttpRequestBuilder;
+import com.netflix.zuul.netty.ZuulToNettyHttpHeaders;
 import com.netflix.zuul.stats.status.StatusCategory;
 import com.netflix.zuul.stats.status.StatusCategoryUtils;
 import com.netflix.zuul.stats.status.ZuulStatusCategory;
@@ -40,9 +41,13 @@ import io.netty.channel.ChannelOutboundHandlerAdapter;
 import io.netty.channel.ChannelPromise;
 import io.netty.channel.embedded.EmbeddedChannel;
 import io.netty.handler.codec.http.DefaultHttpRequest;
+import io.netty.handler.codec.http.HttpHeaderNames;
+import io.netty.handler.codec.http.HttpHeaderValues;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponse;
+import io.netty.handler.codec.http.HttpUtil;
 import io.netty.handler.codec.http.HttpVersion;
+import io.netty.handler.codec.http2.HttpConversionUtil;
 import io.netty.util.ReferenceCountUtil;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -171,6 +176,7 @@ class ClientResponseWriterTest {
 
         channel.attr(ClientRequestReceiver.ATTR_ZUUL_REQ).set(request);
         DefaultHttpRequest nettyRequest = new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/");
+        nettyRequest.headers().set(HttpConversionUtil.ExtensionHeaderNames.STREAM_ID.text(), "3");
         ctx.set(CommonContextKeys.NETTY_HTTP_REQUEST, nettyRequest);
 
         channel.pipeline().fireUserEventTriggered(new HttpLifecycleChannelHandler.StartEvent(nettyRequest));
@@ -178,6 +184,7 @@ class ClientResponseWriterTest {
 
         HttpResponse out = nettyResp.get();
         assertThat(out).isNotNull();
+        assertThat(out.headers()).isInstanceOf(ZuulToNettyHttpHeaders.class);
 
         // original (non-normalised) case is preserved
         assertThat(out.headers().names()).contains("X-Custom-Header");
@@ -185,6 +192,10 @@ class ClientResponseWriterTest {
 
         // every entry is copied, including repeated names
         assertThat(out.headers().getAll("Set-Cookie")).containsExactly("a=1", "b=2");
+        assertThat(out.headers().get(HttpHeaderNames.TRANSFER_ENCODING)).isEqualTo(HttpHeaderValues.CHUNKED.toString());
+        assertThat(HttpUtil.isKeepAlive(out)).isTrue();
+        assertThat(out.headers().get(HttpConversionUtil.ExtensionHeaderNames.STREAM_ID.text()))
+                .isEqualTo("3");
     }
 
     @Test
