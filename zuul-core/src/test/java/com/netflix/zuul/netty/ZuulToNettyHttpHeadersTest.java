@@ -86,7 +86,7 @@ class ZuulToNettyHttpHeadersTest {
     }
 
     @Test
-    void exposesCaseInsensitiveDistinctNames() {
+    void exposesNamesInFirstSeenOrder() {
         ZuulToNettyHttpHeaders headers = new ZuulToNettyHttpHeaders(3);
         headers.add("X-First", "one");
         headers.add("x-first", "two");
@@ -94,9 +94,7 @@ class ZuulToNettyHttpHeadersTest {
 
         Set<String> names = headers.names();
 
-        assertThat(names).containsExactlyInAnyOrder("X-First", "Second");
-        assertThat(names.contains("X-FIRST")).isTrue();
-        assertThat(names.contains("missing")).isFalse();
+        assertThat(names).containsExactly("X-First", "x-first", "Second");
     }
 
     @Test
@@ -125,6 +123,16 @@ class ZuulToNettyHttpHeadersTest {
         headers.clear();
         assertThat(headers).isEmpty();
         assertThat(headers.names()).isEmpty();
+    }
+
+    @Test
+    void preservesExistingValueWhenSetConversionFails() {
+        ZuulToNettyHttpHeaders headers = new ZuulToNettyHttpHeaders(1);
+        headers.add("first", "one");
+
+        assertThatThrownBy(() -> headers.set("first", (Object) null)).isInstanceOf(NullPointerException.class);
+
+        assertThat(headers.get("first")).isEqualTo("one");
     }
 
     @Test
