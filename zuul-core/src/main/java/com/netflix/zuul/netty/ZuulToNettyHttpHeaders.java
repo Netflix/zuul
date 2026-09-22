@@ -25,12 +25,12 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Set;
-import java.util.TreeSet;
 import lombok.NonNull;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -153,7 +153,7 @@ public class ZuulToNettyHttpHeaders extends HttpHeaders {
 
     @Override
     public Set<String> names() {
-        Set<String> names = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+        Set<String> names = new LinkedHashSet<>();
 
         for (int i = 0; i < this.size(); i++) {
             names.add(this.name(i).toString());
@@ -198,8 +198,9 @@ public class ZuulToNettyHttpHeaders extends HttpHeaders {
 
     @Override
     public HttpHeaders set(String name, Object value) {
+        CharSequence headerValue = this.asCharSequence(value);
         this.remove(name);
-        return this.add(name, value);
+        return this.add(name, headerValue);
     }
 
     @Override
