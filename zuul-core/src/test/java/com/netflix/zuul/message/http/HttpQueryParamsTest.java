@@ -51,6 +51,27 @@ class HttpQueryParamsTest {
     }
 
     @Test
+    void getMatchesMixedCaseNamesVerbatim() {
+        HttpQueryParams qp = HttpQueryParams.parse("Foo=bar&baz=qux&Foo=second");
+
+        assertThat(qp.get("Foo")).isEqualTo(List.of("bar", "second"));
+        assertThat(qp.getFirst("Foo")).isEqualTo("bar");
+        assertThat(qp.contains("Foo")).isTrue();
+        assertThat(qp.get("baz")).isEqualTo(List.of("qux"));
+        assertThat(qp.get("foo")).isEmpty();
+    }
+
+    @Test
+    void getMatchesNameAddedWithMixedCase() {
+        HttpQueryParams qp = new HttpQueryParams();
+        qp.add("Foo", "bar");
+
+        assertThat(qp.get("Foo")).isEqualTo(List.of("bar"));
+        assertThat(qp.get("foo")).isEmpty();
+        assertThat(qp.containsIgnoreCase("foo")).isTrue();
+    }
+
+    @Test
     void testToEncodedString() {
         HttpQueryParams qp = new HttpQueryParams();
         qp.add("k'1", "v1&");
@@ -157,6 +178,17 @@ class HttpQueryParamsTest {
         queryParams.add(camelCaseKey.toLowerCase(Locale.ROOT), "value");
 
         assertThat(queryParams.containsIgnoreCase(camelCaseKey)).isTrue();
+    }
+
+    @Test
+    void containsIgnoreCaseMatchesMixedCaseStoredName() {
+        HttpQueryParams queryParams = new HttpQueryParams();
+        queryParams.add("keyName", "value");
+
+        assertThat(queryParams.containsIgnoreCase("keyname")).isTrue();
+        assertThat(queryParams.containsIgnoreCase("KEYNAME")).isTrue();
+        assertThat(queryParams.containsIgnoreCase("keyName")).isTrue();
+        assertThat(queryParams.containsIgnoreCase("other")).isFalse();
     }
 
     @Test
