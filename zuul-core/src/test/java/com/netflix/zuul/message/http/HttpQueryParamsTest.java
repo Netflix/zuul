@@ -192,6 +192,26 @@ class HttpQueryParamsTest {
     }
 
     @Test
+    void getIgnoreCaseMatchesMixedCase() {
+        HttpQueryParams queryParams = new HttpQueryParams();
+        queryParams.add("keyName", "value1");
+        queryParams.add("KEYNAME", "value2");
+        queryParams.add("other", "value3");
+
+        assertThat(queryParams.getIgnoreCase("keyname")).isEqualTo(List.of("value1", "value2"));
+        assertThat(queryParams.getIgnoreCase("KEYNAME")).isEqualTo(List.of("value1", "value2"));
+        assertThat(queryParams.getIgnoreCase("keyName")).isEqualTo(List.of("value1", "value2"));
+    }
+
+    @Test
+    void getIgnoreCaseNotFound() {
+        HttpQueryParams queryParams = new HttpQueryParams();
+        queryParams.add("keyName", "value");
+
+        assertThat(queryParams.getIgnoreCase("other")).isEmpty();
+    }
+
+    @Test
     void maintainsOrderOnToString() {
         String queryString =
                 IntStream.range(0, 100).mapToObj(i -> "k%d=v%d".formatted(i, i)).collect(Collectors.joining("&"));
