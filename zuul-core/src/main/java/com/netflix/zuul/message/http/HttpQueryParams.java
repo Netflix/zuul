@@ -23,10 +23,12 @@ import com.google.common.collect.ListMultimap;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.StringTokenizer;
 
@@ -113,6 +115,17 @@ public class HttpQueryParams implements Cloneable {
 
     public List<String> get(String name) {
         return delegate.get(name);
+    }
+
+    public List<String> getIgnoreCase(String name) {
+        List<String> values = new ArrayList<>();
+        for (Entry<String, String> entry : delegate.entries()) {
+            if (entry.getKey().equalsIgnoreCase(name)) {
+                values.add(entry.getValue());
+            }
+        }
+
+        return values;
     }
 
     public boolean contains(String name) {
