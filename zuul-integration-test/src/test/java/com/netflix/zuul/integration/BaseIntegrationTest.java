@@ -44,6 +44,7 @@ import com.netflix.zuul.integration.server.HeaderNames;
 import com.netflix.zuul.integration.server.TestUtil;
 import io.netty.channel.epoll.Epoll;
 import io.netty.handler.codec.compression.Brotli;
+import io.netty.handler.codec.compression.Zstd;
 import io.netty.util.ResourceLeakDetector;
 import java.io.IOException;
 import java.io.InputStream;
@@ -590,6 +591,37 @@ abstract class BaseIntegrationTest {
         DirectDecompress decompressResult = DirectDecompress.decompress(compressedData);
         assertThat(decompressResult.getResultStatus()).isEqualTo(DecoderJNI.Status.DONE);
         assertThat(new String(decompressResult.getDecompressedData(), TestUtil.CHARSET))
+                .isEqualTo("Hello Hello Hello Hello Hello");
+
+        inputStream.close();
+        connection.disconnect();
+    }
+
+    @Test
+    void zstdOnly() throws Throwable {
+        Zstd.ensureAvailability();
+        String expectedResponseBody = TestUtil.COMPRESSIBLE_CONTENT;
+
+        wireMock.register(get(anyUrl())
+                .willReturn(aResponse()
+                        .withStatus(200)
+                        .withBody(expectedResponseBody)
+                        .withHeader("Content-Type", TestUtil.COMPRESSIBLE_CONTENT_TYPE)));
+
+        URL url = new URL(zuulBaseUri);
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setRequestMethod("GET");
+        connection.setAllowUserInteraction(false);
+        connection.setRequestProperty("Accept-Encoding", "zstd");
+        InputStream inputStream = connection.getInputStream();
+        assertThat(connection.getResponseCode()).isEqualTo(200);
+        assertThat(connection.getHeaderField("Content-Type")).isEqualTo("text/plain");
+        assertThat(connection.getHeaderField("Content-Encoding")).isEqualTo("zstd");
+        byte[] compressedData = IOUtils.toByteArray(inputStream);
+        assertThat(compressedData.length > 0).isTrue();
+        byte[] decompressResult = com.github.luben.zstd.Zstd.decompress(compressedData);
+        assertThat(decompressResult).hasSizeGreaterThan(0);
+        assertThat(new String(decompressResult, TestUtil.CHARSET))
                 .isEqualTo("Hello Hello Hello Hello Hello");
 
         inputStream.close();
