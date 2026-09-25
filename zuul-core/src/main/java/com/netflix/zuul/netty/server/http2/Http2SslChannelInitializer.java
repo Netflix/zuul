@@ -122,6 +122,9 @@ public final class Http2SslChannelInitializer extends BaseZuulChannelInitializer
                         channelConfig,
                         cp -> {
                             http1Codec(cp);
+                            // Must be added here rather than inside http1Handlers: that method is shared with
+                            // the HTTP/2 branch above, where these HTTP/1.1 connection handlers do not belong.
+                            addHttp1FramingHandlers(cp);
                             http1Handlers(cp);
                         }));
         pipeline.addLast("codec_placeholder", DUMMY_HANDLER);

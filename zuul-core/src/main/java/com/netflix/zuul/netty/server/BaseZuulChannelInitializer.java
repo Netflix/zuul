@@ -258,7 +258,19 @@ public abstract class BaseZuulChannelInitializer extends ChannelInitializer<Chan
 
     protected void addHttp1Handlers(ChannelPipeline pipeline) {
         pipeline.addLast(HTTP_CODEC_HANDLER_NAME, createHttpServerCodec());
+        addHttp1FramingHandlers(pipeline);
+    }
 
+    /**
+     * Adds the handlers that must sit between the HTTP/1.1 codec and the Zuul filter chain: decoder failure
+     * rejection, RFC 9112 section 6.3 framing enforcement, and connection close/expiry management.
+     *
+     * <p>This is split out of {@link #addHttp1Handlers(ChannelPipeline)} so that listeners which negotiate
+     * HTTP/1.1 over ALPN can reuse it. Those listeners install the codec themselves, by replacing a
+     * placeholder handler so that it lands in the correct position, and so cannot call
+     * {@code addHttp1Handlers} as a whole.
+     */
+    protected void addHttp1FramingHandlers(ChannelPipeline pipeline) {
         pipeline.addLast(new Http1DecoderFailureRejectingHandler());
 
         if (HTTP1_FRAMING_ENFORCEMENT_ENABLED.get()) {
