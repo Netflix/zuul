@@ -94,9 +94,9 @@ public final class Http1FramingEnforcingHandler extends ChannelInboundHandlerAda
     }
 
     /**
-     * Returns true if the final transfer coding is `chunked`. Per RFC 9112 section 6.1, when any transfer coding
-     * other than chunked is applied, chunked MUST be applied as the final coding, otherwise the message body has no
-     * reliable end marker.
+     * Returns true if the final transfer coding is exactly `chunked`. Per RFC 9112 section 6.1, when any transfer
+     * coding other than chunked is applied, chunked MUST be applied as the final coding, otherwise the message body
+     * has no reliable end marker.
      */
     private static boolean isChunkedFinalCoding(List<String> transferEncodingHeaders) {
         if (transferEncodingHeaders.isEmpty()) {
@@ -109,12 +109,7 @@ public final class Http1FramingEnforcingHandler extends ChannelInboundHandlerAda
             return false;
         }
 
-        return HttpHeaderValues.CHUNKED.contentEqualsIgnoreCase(stripTransferParameters(encodings.getLast()));
-    }
-
-    private static String stripTransferParameters(String coding) {
-        int paramStart = coding.indexOf(';');
-        return paramStart == -1 ? coding : coding.substring(0, paramStart).trim();
+        return HttpHeaderValues.CHUNKED.contentEqualsIgnoreCase(encodings.getLast());
     }
 
     private static void rejectAndClose(ChannelHandlerContext ctx, HttpRequest req, Object msg, String detail) {
