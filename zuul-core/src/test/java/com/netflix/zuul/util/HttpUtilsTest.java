@@ -84,6 +84,27 @@ class HttpUtilsTest {
     }
 
     @Test
+    void rejectsGzipWithZeroQuality() {
+        Headers headers = new Headers();
+        headers.add("Accept-Encoding", "gzip;q=0");
+        assertThat(HttpUtils.acceptsGzip(headers)).isFalse();
+    }
+
+    @Test
+    void acceptsGzipWithPositiveQuality() {
+        Headers headers = new Headers();
+        headers.add("Accept-Encoding", "gzip;q=0.5");
+        assertThat(HttpUtils.acceptsGzip(headers)).isTrue();
+    }
+
+    @Test
+    void acceptsGzipWithoutQuality() {
+        Headers headers = new Headers();
+        headers.add("Accept-Encoding", "gzip");
+        assertThat(HttpUtils.acceptsGzip(headers)).isTrue();
+    }
+
+    @Test
     void stripMaliciousHeaderChars() {
         assertThat(HttpUtils.stripMaliciousHeaderChars("some\r\nthing")).isEqualTo("something");
         assertThat(HttpUtils.stripMaliciousHeaderChars("some thing")).isEqualTo("some thing");
