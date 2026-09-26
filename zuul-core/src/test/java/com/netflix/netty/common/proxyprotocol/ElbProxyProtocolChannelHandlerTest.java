@@ -19,6 +19,8 @@ package com.netflix.netty.common.proxyprotocol;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.net.InetAddresses;
+import com.netflix.config.DynamicBooleanProperty;
+import com.netflix.config.DynamicStringListProperty;
 import com.netflix.netty.common.SourceAddressChannelHandler;
 import com.netflix.spectator.api.Counter;
 import com.netflix.spectator.api.DefaultRegistry;
@@ -32,7 +34,9 @@ import io.netty.channel.embedded.EmbeddedChannel;
 import io.netty.handler.codec.haproxy.HAProxyMessage;
 import io.netty.handler.codec.haproxy.HAProxyProtocolVersion;
 import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 import java.nio.charset.StandardCharsets;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -47,6 +51,24 @@ class ElbProxyProtocolChannelHandlerTest {
     @BeforeEach
     void setup() {
         registry = new DefaultRegistry();
+    }
+
+    @AfterEach
+    void resetTrustedPeerConfig() {
+        ElbProxyProtocolChannelHandler.TRUSTED_PEER_CIDRS =
+                new DynamicStringListProperty("zuul.proxyprotocol.trusted.cidrs", "");
+        ElbProxyProtocolChannelHandler.ENFORCE_TRUSTED_PEER_CIDRS =
+                new DynamicBooleanProperty("zuul.proxyprotocol.trusted.cidrs.enforce", false);
+    }
+
+    private static EmbeddedChannel channelWithRemoteAddress(String host, int port) {
+        SocketAddress remoteAddress = new InetSocketAddress(InetAddresses.forString(host), port);
+        return new EmbeddedChannel() {
+            @Override
+            protected SocketAddress remoteAddress0() {
+                return remoteAddress;
+            }
+        };
     }
 
     @Test
@@ -359,5 +381,105 @@ class ElbProxyProtocolChannelHandlerTest {
                 .isEqualTo("192.168.0.1");
         assertThat(channel.attr(SourceAddressChannelHandler.ATTR_REMOTE_ADDR).get())
                 .isEqualTo(new InetSocketAddress(InetAddresses.forString("192.168.0.1"), 10008));
+    }
+
+    @Test
+    void trustedPeer_matchingCidr_parsesMessage() {
+        ElbProxyProtocolChannelHandler.TRUSTED_PEER_CIDRS =
+                new DynamicStringListProperty("zuul.proxyprotocol.trusted.cidrs", "10.0.0.0/8");
+
+        EmbeddedChannel channel = channelWithRemoteAddress("10.1.2.3", 5000);
+        channel.attr(Server.CONN_DIMENSIONS).set(Attrs.newInstance());
+        channel.attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT).set(7007);
+
+        channel.pipeline()
+                .addLast(ElbProxyProtocolChannelHandler.NAME, new ElbProxyProtocolChannelHandler(registry, true));
+        ByteBuf buf = Unpooled.wrappedBuffer(
+                "PROXY TCP4 192.168.0.1 124.123.111.111 10008 443\r\n".getBytes(StandardCharsets.US_ASCII));
+        channel.writeInbound(buf);
+
+        assertThat(channel.attr(SourceAddressChannelHandler.ATTR_SOURCE_ADDRESS).get())
+                .isEqualTo("192.168.0.1");
+        Counter untrustedCounter = registry.counter("zuul.hapm.untrusted_peer", "port", "7007", "enforced", "false");
+        assertThat(untrustedCounter.count()).isZero();
+    }
+
+    @Test
+    void untrustedPeer_shadowMode_stillParsesMessageButRecordsMetric() {
+        ElbProxyProtocolChannelHandler.TRUSTED_PEER_CIDRS =
+                new DynamicStringListProperty("zuul.proxyprotocol.trusted.cidrs", "10.0.0.0/8");
+        // ENFORCE_TRUSTED_PEER_CIDRS defaults to false (shadow mode).
+
+        EmbeddedChannel channel = channelWithRemoteAddress("203.0.113.5", 5000);
+        channel.attr(Server.CONN_DIMENSIONS).set(Attrs.newInstance());
+        channel.attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT).set(7007);
+
+        channel.pipeline()
+                .addLast(ElbProxyProtocolChannelHandler.NAME, new ElbProxyProtocolChannelHandler(registry, true));
+        ByteBuf buf = Unpooled.wrappedBuffer(
+                "PROXY TCP4 192.168.0.1 124.123.111.111 10008 443\r\n".getBytes(StandardCharsets.US_ASCII));
+        channel.writeInbound(buf);
+
+        // Shadow mode: the spoofed source address is still honored (unchanged behavior)...
+        assertThat(channel.attr(SourceAddressChannelHandler.ATTR_SOURCE_ADDRESS).get())
+                .isEqualTo("192.168.0.1");
+        // ...but the mismatch is now observable.
+        Counter untrustedCounter = registry.counter("zuul.hapm.untrusted_peer", "port", "7007", "enforced", "false");
+        assertThat(untrustedCounter.count()).isEqualTo(1);
+    }
+
+    @Test
+    void untrustedPeer_enforceMode_ignoresMessageAndKeepsRealAddress() {
+        ElbProxyProtocolChannelHandler.TRUSTED_PEER_CIDRS =
+                new DynamicStringListProperty("zuul.proxyprotocol.trusted.cidrs", "10.0.0.0/8");
+        ElbProxyProtocolChannelHandler.ENFORCE_TRUSTED_PEER_CIDRS =
+                new DynamicBooleanProperty("zuul.proxyprotocol.trusted.cidrs.enforce", true);
+
+        EmbeddedChannel channel = channelWithRemoteAddress("203.0.113.5", 5000);
+        channel.attr(Server.CONN_DIMENSIONS).set(Attrs.newInstance());
+        channel.attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT).set(7007);
+
+        channel.pipeline()
+                .addLast(ElbProxyProtocolChannelHandler.NAME, new ElbProxyProtocolChannelHandler(registry, true));
+        ByteBuf buf = Unpooled.wrappedBuffer(
+                "PROXY TCP4 192.168.0.1 124.123.111.111 10008 443\r\n".getBytes(StandardCharsets.US_ASCII));
+        channel.writeInbound(buf);
+
+        Object passedThrough = channel.readInbound();
+        assertThat(passedThrough).isEqualTo(buf);
+        buf.release();
+
+        // The spoofed PROXY message is ignored entirely; no source address is derived from it.
+        assertThat(channel.attr(SourceAddressChannelHandler.ATTR_SOURCE_ADDRESS).get())
+                .isNull();
+        assertThat(channel.attr(HAProxyMessageChannelHandler.ATTR_HAPROXY_MESSAGE)
+                        .get())
+                .isNull();
+        assertThat(channel.pipeline().context(ElbProxyProtocolChannelHandler.NAME))
+                .isNull();
+
+        Counter untrustedCounter = registry.counter("zuul.hapm.untrusted_peer", "port", "7007", "enforced", "true");
+        assertThat(untrustedCounter.count()).isEqualTo(1);
+    }
+
+    @Test
+    void isTrustedPeer_emptyAllowlist_defaultsToTrustAll() {
+        ElbProxyProtocolChannelHandler.TRUSTED_PEER_CIDRS =
+                new DynamicStringListProperty("zuul.proxyprotocol.trusted.cidrs", "");
+
+        EmbeddedChannel channel = channelWithRemoteAddress("203.0.113.5", 5000);
+        assertThat(ElbProxyProtocolChannelHandler.isTrustedPeer(channel)).isTrue();
+    }
+
+    @Test
+    void isTrustedPeer_ipv6Cidr_matches() {
+        ElbProxyProtocolChannelHandler.TRUSTED_PEER_CIDRS =
+                new DynamicStringListProperty("zuul.proxyprotocol.trusted.cidrs", "2001:db8::/32");
+
+        EmbeddedChannel trusted = channelWithRemoteAddress("2001:db8::1", 5000);
+        assertThat(ElbProxyProtocolChannelHandler.isTrustedPeer(trusted)).isTrue();
+
+        EmbeddedChannel untrusted = channelWithRemoteAddress("2001:db9::1", 5000);
+        assertThat(ElbProxyProtocolChannelHandler.isTrustedPeer(untrusted)).isFalse();
     }
 }
