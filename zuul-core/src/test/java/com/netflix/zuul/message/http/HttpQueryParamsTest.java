@@ -171,6 +171,14 @@ class HttpQueryParamsTest {
     }
 
     @Test
+    void copiesKeepTrailingEquals() {
+        HttpQueryParams actual = HttpQueryParams.parse("k1=&k2=v2&k3");
+
+        assertThat(actual.clone().toEncodedString()).isEqualTo("k1=&k2=v2&k3");
+        assertThat(actual.immutableCopy().toEncodedString()).isEqualTo("k1=&k2=v2&k3");
+    }
+
+    @Test
     void parseKeysIgnoreCase() {
         String camelCaseKey = "keyName";
         HttpQueryParams queryParams = new HttpQueryParams();
