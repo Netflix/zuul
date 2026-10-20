@@ -55,7 +55,8 @@ public class StripUntrustedProxyHeadersHandler extends ChannelInboundHandlerAdap
             new AsciiString("x-forwarded-proto"),
             new AsciiString("x-forwarded-proto-version"),
             new AsciiString("x-real-ip"),
-            new AsciiString("forwarded"));
+            new AsciiString("forwarded"),
+            new AsciiString("x-forwarded-client-cert"));
 
     private final AllowWhen allowWhen;
 

@@ -171,6 +171,16 @@ class StripUntrustedProxyHeadersHandlerTest {
         assertThat(headers.contains("forwarded")).isFalse();
     }
 
+    @Test
+    void strip_clientCertHeader() {
+        StripUntrustedProxyHeadersHandler stripHandler = getHandler(AllowWhen.MUTUAL_SSL_AUTH);
+
+        headers.add("x-forwarded-client-cert", "Hash=spoofed;Subject=\"CN=evil\"");
+        stripHandler.stripXFFHeaders(msg);
+
+        assertThat(headers.contains("x-forwarded-client-cert")).isFalse();
+    }
+
     private StripUntrustedProxyHeadersHandler getHandler(AllowWhen allowWhen) {
         return spy(new StripUntrustedProxyHeadersHandler(allowWhen));
     }
