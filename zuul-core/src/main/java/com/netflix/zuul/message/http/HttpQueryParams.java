@@ -223,11 +223,14 @@ public class HttpQueryParams implements Cloneable {
     protected HttpQueryParams clone() {
         HttpQueryParams copy = new HttpQueryParams();
         copy.delegate.putAll(this.delegate);
+        copy.trailingEquals.putAll(this.trailingEquals);
         return copy;
     }
 
     public HttpQueryParams immutableCopy() {
-        return new HttpQueryParams(ImmutableListMultimap.copyOf(delegate));
+        HttpQueryParams copy = new HttpQueryParams(ImmutableListMultimap.copyOf(delegate));
+        copy.trailingEquals.putAll(this.trailingEquals);
+        return copy;
     }
 
     public boolean isImmutable() {
