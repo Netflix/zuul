@@ -39,6 +39,11 @@ import org.jspecify.annotations.NullMarked;
  * <br/>
  * Force-closing (rather than writing a 400) is deliberate: once framing is ambiguous, we cannot trust where the
  * message body ends, and any bytes left in the decoder buffer would otherwise be parsed as the next request.
+ * <br/>
+ * This handler looks up framing headers by their canonical names, so it relies on the HTTP decoder having validated
+ * header names and values first. If {@code server.http.request.headers.validation.enabled} is set to {@code false},
+ * the decoder can accept malformed names such as {@code "Transfer-Encoding "} (trailing whitespace), which this
+ * handler will not see as framing headers. Keep header validation enabled when relying on this handler.
  */
 @NullMarked
 @Slf4j
