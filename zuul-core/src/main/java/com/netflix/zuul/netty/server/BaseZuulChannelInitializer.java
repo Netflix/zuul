@@ -102,6 +102,11 @@ public abstract class BaseZuulChannelInitializer extends ChannelInitializer<Chan
     public static final CachedDynamicBooleanProperty HTTP1_FRAMING_ENFORCEMENT_ENABLED =
             new CachedDynamicBooleanProperty("zuul.http1.framing.enforcement.enabled", true);
 
+    /**
+     * Whether the HTTP/1.1 decoder validates header names and values. Disabling this also weakens
+     * {@link Http1FramingEnforcingHandler}, which only recognizes framing headers whose names the decoder has
+     * validated.
+     */
     public static final CachedDynamicBooleanProperty HTTP_REQUEST_HEADERS_VALIDATION_ENABLED =
             new CachedDynamicBooleanProperty("server.http.request.headers.validation.enabled", true);
 
