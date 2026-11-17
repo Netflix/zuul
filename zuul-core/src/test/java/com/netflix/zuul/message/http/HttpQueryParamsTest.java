@@ -156,6 +156,18 @@ class HttpQueryParamsTest {
     }
 
     @Test
+    void parseDecodesValidEscapesNextToAStrayPercent() {
+        // Browsers leave a literal '%' as is but still escape the rest, e.g. "?q=€ 100%" is sent as below.
+        HttpQueryParams actual = HttpQueryParams.parse("q=%E2%82%AC%20100%&k%20%=a+b%zz");
+
+        assertThat(actual.getFirst("q")).isEqualTo("\u20ac 100%");
+        assertThat(actual.getFirst("k %")).isEqualTo("a b%zz");
+        assertThat(actual.toEncodedString()).isEqualTo("q=%E2%82%AC+100%25&k+%25=a+b%25zz");
+        // a stray '%' in the name must not keep the value from being decoded
+        assertThat(HttpQueryParams.parse("50%=a%20b").getFirst("50%")).isEqualTo("a b");
+    }
+
+    @Test
     void parseKeysWithoutValuesMixedTrailers() {
         HttpQueryParams expected = new HttpQueryParams();
         expected.add("k1", "");
