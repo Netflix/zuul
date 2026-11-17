@@ -38,7 +38,7 @@ import org.jspecify.annotations.NullMarked;
  *
  * <blockquote>"A server that is attempting to gracefully shut down a connection SHOULD send an initial GOAWAY frame
  * with the last stream identifier set to 2^31-1 and a NO_ERROR code."
- * -- <a href="https://http2.github.io/http2-spec/#GOAWAY">HTTP/2 spec</a></blockquote>
+ * -- <a href="https://www.rfc-editor.org/rfc/rfc9113.html#name-goaway">RFC 9113, Section 6.8</a></blockquote>
  *
  * <p>Then, once the close timeout elapses (see {@link CommonChannelConfigKeys#connCloseDelay}),
  * netty is instructed to send a second GOAWAY using an accurate last stream id and to start a graceful shutdown. The

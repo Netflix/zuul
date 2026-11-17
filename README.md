@@ -62,7 +62,7 @@ http://www.baeldung.com/spring-rest-with-zuul-proxy
 
 https://blog.heroku.com/using_netflix_zuul_to_proxy_your_microservices
 
-http://blog.ippon.tech/jhipster-3-0-introducing-microservices/
+https://web.archive.org/web/20230928214428/https://blog.ippon.tech/jhipster-3-0-introducing-microservices/
 
 ---
 
