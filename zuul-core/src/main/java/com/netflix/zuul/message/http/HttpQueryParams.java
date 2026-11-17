@@ -67,15 +67,8 @@ public class HttpQueryParams implements Cloneable {
             i = s.indexOf("=");
             // key-value query param
             if (i > 0) {
-                String name = s.substring(0, i);
-                String value = s.substring(i + 1);
-
-                try {
-                    name = URLDecoder.decode(name, StandardCharsets.UTF_8);
-                    value = URLDecoder.decode(value, StandardCharsets.UTF_8);
-                } catch (Exception e) {
-                    // do nothing
-                }
+                String name = decode(s.substring(0, i));
+                String value = decode(s.substring(i + 1));
 
                 queryParams.add(name, value);
 
@@ -86,19 +79,58 @@ public class HttpQueryParams implements Cloneable {
             }
             // key only
             else if (!s.isEmpty()) {
-                String name = s;
-
-                try {
-                    name = URLDecoder.decode(name, StandardCharsets.UTF_8);
-                } catch (Exception e) {
-                    // do nothing
-                }
-
-                queryParams.add(name, "");
+                queryParams.add(decode(s), "");
             }
         }
 
         return queryParams;
+    }
+
+    private static String decode(String component) {
+        try {
+            return URLDecoder.decode(component, StandardCharsets.UTF_8);
+        } catch (IllegalArgumentException e) {
+            return decodeLeniently(component);
+        }
+    }
+
+    /**
+     * Decodes like {@link URLDecoder}, but keeps a '%' that does not start a valid %XX escape as a literal
+     * character instead of giving up on the whole component. This matches how browsers build query strings
+     * (e.g. "?q=50% off" is sent as "q=50%%20off") and how URLSearchParams decodes them.
+     */
+    private static String decodeLeniently(String component) {
+        int length = component.length();
+        StringBuilder sb = new StringBuilder(length);
+        // bytes of the current run of %XX escapes, decoded together so multi-byte UTF-8 sequences stay intact
+        byte[] bytes = new byte[length / 3];
+        int byteCount = 0;
+        int i = 0;
+        while (i < length) {
+            char c = component.charAt(i);
+            if (c == '%' && isEscape(component, i)) {
+                bytes[byteCount++] = (byte) ((Character.digit(component.charAt(i + 1), 16) << 4)
+                        | Character.digit(component.charAt(i + 2), 16));
+                i += 3;
+                continue;
+            }
+            if (byteCount > 0) {
+                sb.append(new String(bytes, 0, byteCount, StandardCharsets.UTF_8));
+                byteCount = 0;
+            }
+            sb.append(c == '+' ? ' ' : c);
+            i++;
+        }
+        if (byteCount > 0) {
+            sb.append(new String(bytes, 0, byteCount, StandardCharsets.UTF_8));
+        }
+        return sb.toString();
+    }
+
+    private static boolean isEscape(String component, int i) {
+        return i + 2 < component.length()
+                && Character.digit(component.charAt(i + 1), 16) >= 0
+                && Character.digit(component.charAt(i + 2), 16) >= 0;
     }
 
     /**
